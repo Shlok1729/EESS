@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  
+  /* EES Colors */
+  --color-ees-navy: #0F172A;
+  --color-ees-red: #DC2626;
+  --color-ees-light: #F8FAFC;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-ees-light);
+  color: var(--color-ees-navy);
+}
