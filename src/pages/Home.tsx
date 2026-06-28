@@ -1,5 +1,6 @@
-import { Shield, ChevronRight, Sparkles, UserCheck, Search, Quote, QrCode, MapPin, Award, Users } from 'lucide-react';
+import { Shield, ChevronRight, Sparkles, UserCheck, Search, QrCode, MapPin, Award, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TestimonialsCarousel from '../components/Testimonials';
 
 const Home = () => {
   return (
@@ -18,7 +19,7 @@ const Home = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            
+
             {/* Left Column: Written Content */}
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ees-red/10 border border-ees-red/20 text-ees-red mb-6 animate-fade-in-up">
@@ -46,12 +47,14 @@ const Home = () => {
             <div className="hidden lg:flex justify-center items-center relative">
               {/* Glowing Background Blur */}
               <div className="absolute inset-0 bg-ees-red/20 blur-[100px] rounded-full"></div>
-              
+
               {/* Premium Animated SVG Container */}
               <div className="relative bg-white/5 p-16 rounded-full border border-white/10 backdrop-blur-sm shadow-2xl">
-                {/* Center Icon */}
-                <Shield className="h-48 w-48 text-ees-red drop-shadow-[0_0_20px_rgba(220,38,38,0.6)]" strokeWidth={1} />
-                
+                {/* Center Icon (Logo) */}
+                <div className="relative z-10 w-48 h-48 flex items-center justify-center bg-white/90 rounded-full p-4 shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                  <img src="/logo.png" alt="Eagle Eye Security Services Logo" className="w-full h-auto object-contain" />
+                </div>
+
                 {/* Rotating Rings */}
                 <div className="absolute inset-0 border-4 border-white/5 rounded-full border-t-ees-gold animate-spin" style={{ animationDuration: '8s' }}></div>
                 <div className="absolute inset-[-24px] border-2 border-dashed border-white/20 rounded-full animate-spin" style={{ animationDuration: '24s', animationDirection: 'reverse' }}></div>
@@ -101,21 +104,29 @@ const Home = () => {
             <div className="w-16 h-1.5 bg-ees-red mx-auto mb-6"></div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-              <Shield className="h-10 w-10 text-ees-red mb-4" />
-              <h3 className="text-lg font-bold text-ees-navy">Guarding Services</h3>
+            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+                <Shield className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Guarding Services</h3>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-              <Sparkles className="h-10 w-10 text-ees-red mb-4" />
-              <h3 className="text-lg font-bold text-ees-navy">Housekeeping & IFM</h3>
+            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+                <Sparkles className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Housekeeping & IFM</h3>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-              <UserCheck className="h-10 w-10 text-ees-red mb-4" />
-              <h3 className="text-lg font-bold text-ees-navy">Bouncers & Event Security</h3>
+            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+                <UserCheck className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Bouncers & Event Security</h3>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-              <Search className="h-10 w-10 text-ees-red mb-4" />
-              <h3 className="text-lg font-bold text-ees-navy">Investigation</h3>
+            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+                <Search className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Investigation</h3>
             </div>
           </div>
           <div className="text-center mt-10">
@@ -139,12 +150,12 @@ const Home = () => {
 
           <div className="grid md:grid-cols-2 gap-10">
             {/* USP 1 */}
-            <div className="flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0">
+            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
+              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
                 <QrCode className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3">No More Blind Spots: Smart QR Patrols</h3>
+                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">No More Blind Spots: Smart QR Patrols</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Say goodbye to traditional paper registers and sleeping on the job. Eagle Eye deploys strategic QR checkpoints across your premises. Our guards must physically scan these points during their night and day patrols. As a client, you receive automated digital logs proving your property was actively monitored every single hour.
                 </p>
@@ -152,12 +163,12 @@ const Home = () => {
             </div>
 
             {/* USP 2 */}
-            <div className="flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0">
+            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
+              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
                 <MapPin className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3">Verified Deployments: Live Geo-Fenced Attendance</h3>
+                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">Verified Deployments: Live Geo-Fenced Attendance</h3>
                 <p className="text-gray-600 leading-relaxed">
                   We bring absolute transparency to manpower deployment. Our personnel log their shifts using GPS-fenced biometric apps and uniform selfies. You get exactly what you pay for—on-time, fully uniformed professionals, verified in real-time by our central Moradabad command desk.
                 </p>
@@ -165,12 +176,12 @@ const Home = () => {
             </div>
 
             {/* USP 3 */}
-            <div className="flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0">
+            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
+              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
                 <Award className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3">First Impressions Matter: The Corporate Security Standard</h3>
+                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">First Impressions Matter: The Corporate Security Standard</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Security is the first point of contact for your clients, guests, and employees. At Eagle Eye, we treat security deployment as brand representation. From crisp, high-visibility uniforms to mandatory grooming standards and polite communication, our personnel are trained to elevate the corporate image of your facility.
                 </p>
@@ -178,12 +189,12 @@ const Home = () => {
             </div>
 
             {/* USP 4 */}
-            <div className="flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0">
+            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
+              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
                 <Users className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3">Empowering Local Communities with Dignified Employment</h3>
+                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">Empowering Local Communities with Dignified Employment</h3>
                 <p className="text-gray-600 leading-relaxed">
                   Eagle Eye Security is more than a service provider; we are an employment engine for Moradabad and surrounding regions. By up-skilling local youth, ex-servicemen, and providing fair, reliable income, we build a highly motivated, loyal workforce. When you partner with us, you aren't just securing your premises—you are driving local economic empowerment, resulting in guards who truly care about protecting your assets.
                 </p>
@@ -192,38 +203,11 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <TestimonialsCarousel />
+
 
       {/* Quick Testimonial */}
-      <section className="py-20 bg-gray-100 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto relative">
-            <Quote className="absolute -top-10 -left-6 lg:-left-12 h-32 w-32 text-gray-200/60 -z-10 rotate-180" />
-            <div className="bg-white p-8 md:p-12 rounded-2xl shadow-xl">
-              <p className="text-xl md:text-2xl text-gray-700 font-medium italic leading-relaxed mb-8">
-                "Pleasant and professional services, quality & dedication of security guards is well up to the mark. Highly recommend Eagle Eye for factory security."
-              </p>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-full bg-gray-200 border-2 border-ees-red overflow-hidden">
-                    <img
-                      src="https://api.dicebear.com/7.x/initials/svg?seed=NF&backgroundColor=e2e8f0&textColor=0f172a"
-                      alt="Avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-ees-navy text-lg">Nirmal Fibres Pvt Ltd.</h4>
-                    <p className="text-sm text-gray-500">Factory Client, Moradabad</p>
-                  </div>
-                </div>
-                <Link to="/clients" className="hidden sm:flex text-ees-red font-semibold hover:underline items-center gap-1">
-                  More reviews <ChevronRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+
     </>
   );
 };

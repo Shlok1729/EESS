@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
@@ -11,7 +11,6 @@ const Navbar = () => {
     { name: 'About Us', path: '/about' },
     { name: 'Our Services', path: '/services' },
     { name: 'Our Clients', path: '/clients' },
-    { name: 'Testimonials', path: '/clients#testimonials' },
     { name: 'Contact Us', path: '/contact' }
   ];
 
@@ -20,9 +19,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 cursor-pointer">
-            <Shield className="h-8 w-8 text-ees-red" />
-            <span className="font-bold text-2xl tracking-tight text-ees-navy">EAGLE EYE</span>
+          <Link to="/" className="flex items-center gap-3 cursor-pointer">
+            <img src="/logo.png" alt="Eagle Eye Security Services Logo" className="h-12 w-auto object-contain" />
+            <div className="flex flex-col">
+              <span className="font-extrabold text-2xl tracking-tight text-ees-navy leading-none">EAGLE EYE</span>
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] text-ees-red uppercase mt-1">Security Services</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
