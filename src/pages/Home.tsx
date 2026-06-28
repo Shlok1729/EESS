@@ -104,7 +104,7 @@ const Home = () => {
             <div className="w-16 h-1.5 bg-ees-red mx-auto mb-6"></div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+            <Link to="/services#guarding-services" className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
               <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Shield className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
@@ -112,8 +112,8 @@ const Home = () => {
               <p className="text-gray-600 text-sm leading-relaxed">
                 Highly trained ex-military and professional guards providing uncompromising safety for commercial, industrial, and residential sectors.
               </p>
-            </div>
-            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+            </Link>
+            <Link to="/services#housekeeping-ifm" className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
               <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Sparkles className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
@@ -121,8 +121,8 @@ const Home = () => {
               <p className="text-gray-600 text-sm leading-relaxed">
                 Comprehensive facility management ensuring your premises remain immaculate, well-maintained, and perfectly operational 24/7.
               </p>
-            </div>
-            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+            </Link>
+            <Link to="/services#bouncers-event-security" className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
               <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <UserCheck className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
@@ -130,8 +130,8 @@ const Home = () => {
               <p className="text-gray-600 text-sm leading-relaxed">
                 Specialized crowd control and VIP protection ensuring seamless, incident-free management for high-profile events and concerts.
               </p>
-            </div>
-            <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+            </Link>
+            <Link to="/services#investigation" className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
               <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Search className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
@@ -139,7 +139,7 @@ const Home = () => {
               <p className="text-gray-600 text-sm leading-relaxed">
                 Discreet corporate screening, background checks, and private investigation services to completely protect your business interests.
               </p>
-            </div>
+            </Link>
           </div>
           <div className="text-center mt-10">
             <Link to="/services" className="text-ees-red font-semibold hover:underline inline-flex items-center gap-1">
