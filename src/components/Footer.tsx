@@ -1,4 +1,4 @@
-import { Shield, MapPin, Phone, Mail, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Mail, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -9,11 +9,16 @@ const Footer = () => {
           
           {/* Col 1: Intro */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-ees-red" />
-              <span className="font-bold text-2xl tracking-tight text-white">EAGLE EYE</span>
+            <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10 w-fit">
+              <div className="bg-white p-1.5 rounded-lg">
+                <img src="/logo.png" alt="Eagle Eye Security Services Logo" className="h-10 w-auto object-contain" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-2xl tracking-tight text-white leading-none">EAGLE EYE</span>
+                <span className="text-[0.65rem] font-bold tracking-[0.2em] text-ees-red uppercase mt-1">Security Services</span>
+              </div>
             </div>
-            <p className="text-gray-400 leading-relaxed max-w-sm">
+            <p className="text-gray-400 leading-relaxed max-w-sm mt-6">
               Securing assets, businesses, and people with uncompromising dedication and professional excellence in Moradabad and beyond.
             </p>
           </div>
