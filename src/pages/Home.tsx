@@ -1,4 +1,4 @@
-import { Shield, ChevronRight, Sparkles, UserCheck, Search, QrCode, MapPin, Award, Users } from 'lucide-react';
+import { Shield, ChevronRight, Sparkles, UserCheck, Search, QrCode, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TestimonialsCarousel from '../components/Testimonials';
 
@@ -105,28 +105,40 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
-              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Shield className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Guarding Services</h3>
+              <h3 className="text-xl font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300 mb-3">Guarding Services</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Highly trained ex-military and professional guards providing uncompromising safety for commercial, industrial, and residential sectors.
+              </p>
             </div>
             <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
-              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Sparkles className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Housekeeping & IFM</h3>
+              <h3 className="text-xl font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300 mb-3">Housekeeping & IFM</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Comprehensive facility management ensuring your premises remain immaculate, well-maintained, and perfectly operational 24/7.
+              </p>
             </div>
             <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
-              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <UserCheck className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Bouncers & Event Security</h3>
+              <h3 className="text-xl font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300 mb-3">Bouncers & Event Security</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Specialized crowd control and VIP protection ensuring seamless, incident-free management for high-profile events and concerts.
+              </p>
             </div>
             <div className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-ees-red/20 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 cursor-pointer">
-              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300">
+              <div className="w-20 h-20 rounded-full bg-ees-red/5 flex items-center justify-center mb-6 group-hover:bg-ees-red transition-colors duration-300 shrink-0">
                 <Search className="h-10 w-10 text-ees-red group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-lg font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300">Investigation</h3>
+              <h3 className="text-xl font-bold text-ees-navy group-hover:text-ees-red transition-colors duration-300 mb-3">Investigation</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Discreet corporate screening, background checks, and private investigation services to completely protect your business interests.
+              </p>
             </div>
           </div>
           <div className="text-center mt-10">
@@ -150,54 +162,38 @@ const Home = () => {
 
           <div className="grid md:grid-cols-2 gap-10">
             {/* USP 1 */}
-            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
-                <QrCode className="h-8 w-8" />
+            <div className="group flex flex-col bg-ees-light rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 overflow-hidden cursor-pointer">
+              <div className="w-full h-64 overflow-hidden relative">
+                <img src="/qr-patrol.jpg" alt="Smart QR Patrols" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">No More Blind Spots: Smart QR Patrols</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Say goodbye to traditional paper registers and sleeping on the job. Eagle Eye deploys strategic QR checkpoints across your premises. Our guards must physically scan these points during their night and day patrols. As a client, you receive automated digital logs proving your property was actively monitored every single hour.
-                </p>
+              <div className="p-8 flex flex-col sm:flex-row gap-6 items-start">
+                <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300 -mt-16 relative z-10 border-4 border-ees-light">
+                  <QrCode className="h-8 w-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">No More Blind Spots: Smart QR Patrols</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Say goodbye to traditional paper registers and sleeping on the job. Eagle Eye deploys strategic QR checkpoints across your premises. Our guards must physically scan these points during their night and day patrols. As a client, you receive automated digital logs proving your property was actively monitored every single hour.
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* USP 2 */}
-            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
-                <MapPin className="h-8 w-8" />
+            <div className="group flex flex-col bg-ees-light rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 overflow-hidden cursor-pointer">
+              <div className="w-full h-64 overflow-hidden relative">
+                <img src="/geo-fence.jpg" alt="Live Geo-Fenced Attendance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">Verified Deployments: Live Geo-Fenced Attendance</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  We bring absolute transparency to manpower deployment. Our personnel log their shifts using GPS-fenced biometric apps and uniform selfies. You get exactly what you pay for—on-time, fully uniformed professionals, verified in real-time by our central Moradabad command desk.
-                </p>
-              </div>
-            </div>
-
-            {/* USP 3 */}
-            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
-                <Award className="h-8 w-8" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">First Impressions Matter: The Corporate Security Standard</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Security is the first point of contact for your clients, guests, and employees. At Eagle Eye, we treat security deployment as brand representation. From crisp, high-visibility uniforms to mandatory grooming standards and polite communication, our personnel are trained to elevate the corporate image of your facility.
-                </p>
-              </div>
-            </div>
-
-            {/* USP 4 */}
-            <div className="group flex flex-col sm:flex-row gap-6 items-start bg-ees-light p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-2 hover:border-ees-red/20 transition-all duration-300 cursor-pointer">
-              <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300">
-                <Users className="h-8 w-8" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">Empowering Local Communities with Dignified Employment</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Eagle Eye Security is more than a service provider; we are an employment engine for Moradabad and surrounding regions. By up-skilling local youth, ex-servicemen, and providing fair, reliable income, we build a highly motivated, loyal workforce. When you partner with us, you aren't just securing your premises—you are driving local economic empowerment, resulting in guards who truly care about protecting your assets.
-                </p>
+              <div className="p-8 flex flex-col sm:flex-row gap-6 items-start">
+                <div className="bg-white p-4 rounded-full text-ees-red shadow-sm shrink-0 group-hover:bg-ees-red group-hover:text-white transition-colors duration-300 -mt-16 relative z-10 border-4 border-ees-light">
+                  <MapPin className="h-8 w-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-ees-navy mb-3 group-hover:text-ees-red transition-colors duration-300">Verified Deployments: Live Geo-Fenced Attendance</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    We bring absolute transparency to manpower deployment. Our personnel log their shifts using GPS-fenced biometric apps and uniform selfies. You get exactly what you pay for—on-time, fully uniformed professionals, verified in real-time by our central Moradabad command desk.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
