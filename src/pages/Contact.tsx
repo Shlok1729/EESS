@@ -15,7 +15,7 @@ const Contact = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
           <div className="space-y-8 bg-ees-light p-10 rounded-2xl border border-gray-100">
             <h2 className="text-2xl font-bold text-ees-navy mb-6">Reach Out Directly</h2>
-            
+
             <div className="flex items-start gap-4">
               <div className="bg-red-50 p-4 rounded-full text-ees-red mt-1">
                 <MapPin className="h-6 w-6" />
@@ -46,7 +46,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Email</h4>
-                <p className="text-gray-600 text-lg">info@eagleeyesecurity.in</p>
+                <p className="text-gray-600 text-lg">admin.eagleeyesecurity@gmail.com</p>
               </div>
             </div>
 
@@ -62,7 +62,7 @@ const Contact = () => {
             <form className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                <input type="text" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ees-red focus:border-ees-red outline-none transition-all" placeholder="John Doe" />
+                <input type="text" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ees-red focus:border-ees-red outline-none transition-all" placeholder="Rahul Kapoor" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
