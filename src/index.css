@@ -7,10 +7,24 @@
   --color-ees-navy: #0F172A;
   --color-ees-red: #DC2626;
   --color-ees-light: #F8FAFC;
+  --color-ees-gold: #EAB308;
+  --color-ees-blue: #1D4ED8;
+  --color-ees-gray: #64748B;
+  --color-ees-dark: #020617;
+  --color-ees-white: #FFFFFF;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--color-ees-light);
   color: var(--color-ees-navy);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
 }

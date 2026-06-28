@@ -1,13 +1,27 @@
 import { Quote } from 'lucide-react';
 
 const Clients = () => {
-  const clients = [
-    "Moradabad Airport",
-    "G.K. Hospital",
-    "Tata Motors CNG",
-    "SDM Inter College",
-    "Jungle Safari Water Park",
-    "Eastwood International Export"
+  const clientCategories = [
+    {
+      sector: "Aviation & Government",
+      clients: ["Moradabad Airport"]
+    },
+    {
+      sector: "Healthcare & Medical",
+      clients: ["G.K. Hospital"]
+    },
+    {
+      sector: "Industrial & Export",
+      clients: ["Tata Motors CNG", "Eastwood International Export"]
+    },
+    {
+      sector: "Education",
+      clients: ["SDM Inter College"]
+    },
+    {
+      sector: "Hospitality & Entertainment",
+      clients: ["Jungle Safari Water Park"]
+    }
   ];
 
   return (
@@ -21,17 +35,24 @@ const Clients = () => {
           </p>
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 items-center justify-items-center">
-            {clients.map((client, index) => (
-              <div 
-                key={index}
-                className="w-full bg-ees-light py-10 px-4 rounded-lg text-center font-bold text-gray-500 hover:text-ees-navy hover:bg-gray-100 transition-colors cursor-default text-lg shadow-sm border border-gray-100"
-              >
-                {client}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
+          {clientCategories.map((category, idx) => (
+            <div key={idx}>
+              <h3 className="text-2xl font-bold text-ees-navy mb-6 border-b border-gray-200 pb-2">
+                {category.sector}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {category.clients.map((client, cIdx) => (
+                  <div 
+                    key={cIdx}
+                    className="w-full bg-ees-light py-8 px-4 rounded-lg text-center font-bold text-gray-600 hover:text-ees-navy hover:bg-gray-100 transition-colors cursor-default text-lg shadow-sm border border-gray-100"
+                  >
+                    {client}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
