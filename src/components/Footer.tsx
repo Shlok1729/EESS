@@ -51,9 +51,8 @@ const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-ees-red shrink-0 mt-1" />
                 <span>
-                  House No-204, A-block, Sec-13,<br />
-                  Landmark Power House,<br />
-                  New Moradabad 244001 U.P
+                  Mandi Samiti Road, Majhola,<br />
+                  Moradabad, Uttar Pradesh 244001
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -62,7 +61,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-ees-red shrink-0" />
-                <span>info@eagleeyesecurity.in</span>
+                <span>admin.eagleeye@gmail.com</span>
               </li>
               <li className="flex items-center gap-3 mt-4">
                 <span className="font-bold text-white">Director:</span> Sunil Kumar Gupta

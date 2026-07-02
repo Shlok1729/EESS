@@ -23,9 +23,8 @@ const Contact = () => {
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Office Address</h4>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  House No-204, A-block, Sec-13,<br />
-                  Landmark Power House,<br />
-                  New Moradabad 244001 U.P
+                  Mandi Samiti Road, Majhola,<br />
+                  Moradabad, Uttar Pradesh 244001
                 </p>
               </div>
             </div>
@@ -46,7 +45,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Email</h4>
-                <p className="text-gray-600 text-lg">admin.eagleeyesecurity@gmail.com</p>
+                <p className="text-gray-600 text-lg">admin.eagleeye@gmail.com</p>
               </div>
             </div>
 
