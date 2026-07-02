@@ -23,7 +23,7 @@ const Gallery = () => {
     {
       src: "https://res.cloudinary.com/dhqqj1ehx/image/upload/v1782736118/72f8fdc1-c4cf-41e0-9519-6892a5441e66.png",
       alt: "Housekeeping and facility management",
-      client: "SPS Hospital",
+      client: "Adam School Rampur",
       className: "md:col-span-1 h-[200px]"
     },
     {
@@ -35,37 +35,37 @@ const Gallery = () => {
     {
       src: "https://images.unsplash.com/photo-1621360841013-c76831f1db89?auto=format&fit=crop&q=80",
       alt: "24/7 Command Center",
-      client: "Reliance Retail Hub",
+      client: "Bajaj Showroom Sambhal",
       className: "md:col-span-1 h-[200px]"
     },
     {
       src: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80",
       alt: "Commercial Building Patrol",
-      client: "Marriott Hotel",
+      client: "Hydel Contractor",
       className: "md:col-span-1 h-[200px]"
     },
     {
-      src: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80",
+      src: "https://res.cloudinary.com/dhqqj1ehx/image/upload/v1783020626/2025-05-15_jzw8qj.png",
       alt: "Executive Protection",
-      client: "Global Business Summit",
+      client: "RR International",
       className: "md:col-span-1 md:row-span-2 h-[300px] md:h-[416px]"
     },
     {
       src: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80",
       alt: "Corporate Meet Security",
-      client: "Tech Mahindra HQ",
+      client: "Seagull Maritime Agencies",
       className: "md:col-span-2 md:row-span-2 h-[300px] md:h-[416px]"
     },
     {
       src: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80",
       alt: "Night Patrol Operations",
-      client: "Amazon Fulfillment Center",
+      client: "Rail Vihar Campus",
       className: "md:col-span-2 md:row-span-2 h-[300px] md:h-[416px]"
     }
   ];
 
   return (
-    <section className="py-20 lg:py-32 bg-white min-h-[85vh]">
+    <section className="py-20 lg:py-24 bg-white min-h-[85vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-4">
