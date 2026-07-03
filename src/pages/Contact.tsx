@@ -17,18 +17,18 @@ const Contact = () => {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
   };
   return (
-    <section className="py-20 lg:py-32 bg-white min-h-[85vh]">
+    <section className="py-12 lg:py-24 bg-white min-h-[85vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-ees-navy mb-4">Contact Us</h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-ees-navy mb-4">Contact Us</h1>
           <div className="w-20 h-1.5 bg-ees-red mx-auto mb-6"></div>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
             Get in touch with us to discuss your security and facility management requirements.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-          <div className="space-y-8 bg-ees-light p-10 rounded-2xl border border-gray-100">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-20">
+          <div className="space-y-6 bg-ees-light p-6 sm:p-8 lg:p-10 rounded-2xl border border-gray-100">
             <h2 className="text-2xl font-bold text-ees-navy mb-6">Reach Out Directly</h2>
 
             <div className="flex items-start gap-4">
@@ -37,7 +37,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Office Address</h4>
-                <p className="text-gray-600 leading-relaxed text-lg">
+                <p className="text-gray-600 leading-relaxed">
                   Mandi Samiti Road, Majhola,<br />
                   Moradabad, Uttar Pradesh 244001
                 </p>
@@ -50,7 +50,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Phone</h4>
-                <p className="text-gray-600 text-lg">+91-8192005876</p>
+                <p className="text-gray-600">+91-8192005876</p>
               </div>
             </div>
 
@@ -60,7 +60,7 @@ const Contact = () => {
               </div>
               <div>
                 <h4 className="font-bold text-ees-navy text-xl mb-2">Email</h4>
-                <p className="text-gray-600 text-lg">admin.eagleeye@gmail.com</p>
+                <p className="text-gray-600">admin.eagleeye@gmail.com</p>
               </div>
             </div>
 
@@ -71,7 +71,7 @@ const Contact = () => {
             </div>
           </div>
 
-          <div className="bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+          <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-2xl shadow-xl border border-gray-100">
             <h2 className="text-2xl font-bold text-ees-navy mb-6">Request a Free Quote</h2>
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
