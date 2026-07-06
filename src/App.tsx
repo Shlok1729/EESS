@@ -8,10 +8,12 @@ import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import Loader from './components/Loader';
+import GuardPatrol from './pages/GuardPatrol';
+
 
 const AppContent = () => {
   const location = useLocation();
-  
+
   return (
     <>
       {/* Remounts the Loader whenever the pathname changes */}
@@ -25,7 +27,9 @@ const AppContent = () => {
           <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
+
         </Route>
+        <Route path="/guard/patrol" element={<GuardPatrol />} />
       </Routes>
     </>
   );
