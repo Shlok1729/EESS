@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Link2, CheckCircle } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Link2, CheckCircle, Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 
@@ -220,10 +220,118 @@ export default function AdminDashboard() {
     };
 
     const printQRCode = (checkpointId: string, checkpointName: string) => {
+        // 1. Get the names of the guards assigned to this QR
+        const assignedIds = cpAssignmentsMap[checkpointId] || [];
+        const guardNames = assignedIds.map(id => siteGuards.find(g => g.id === id)?.name).filter(Boolean).join(', ') || 'None assigned';
+
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
-        printWindow.document.write(`<html><head><title>Print QR - ${checkpointName}</title><style>body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }.qr-container { border: 2px solid #000; padding: 20px; border-radius: 10px; text-align: center; }h2 { margin-bottom: 5px; }p { margin-top: 0; color: #555; }</style></head><body><div class="qr-container"><h2>EAGLE EYE SECURITY</h2><p>Checkpoint: ${checkpointName}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${checkpointId}" alt="QR" /><p style="font-size: 10px; margin-top: 10px;">ID: ${checkpointId}</p></div><script>window.onload = () => { window.print(); window.close(); }</script></body></html>`);
+        printWindow.document.write(`
+        <html>
+            <head>
+            <title>Print QR - ${checkpointName}</title>
+            <style>
+                body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+                .qr-container { border: 2px solid #000; padding: 30px; border-radius: 10px; text-align: center; max-width: 350px; }
+                h2 { margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+                p { margin-top: 0; color: #555; }
+                .guards-box { margin-top: 20px; padding-top: 15px; border-top: 2px dashed #ccc; font-weight: bold; font-size: 14px; color: #000; }
+                .guard-names { font-weight: normal; font-size: 16px; color: #333; margin-top: 5px; display: block; line-height: 1.4; }
+            </style>
+            </head>
+            <body>
+            <div class="qr-container">
+                <h2>EAGLE EYE SECURITY</h2>
+                <p style="font-size: 18px; font-weight: bold; color: #000; margin-bottom: 20px;">${checkpointName}</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${checkpointId}" alt="QR" />
+                <p style="font-size: 10px; margin-top: 10px; font-family: monospace;">ID: ${checkpointId}</p>
+                <div class="guards-box">
+                    Authorized Personnel:<br/>
+                    <span class="guard-names">${guardNames}</span>
+                </div>
+            </div>
+            <script>
+                // We add a tiny delay to ensure the QR image loads before the print dialog opens
+                window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); }
+            </script>
+            </body>
+        </html>
+        `);
         printWindow.document.close();
+    };
+
+    const downloadQRCode = (checkpointId: string, checkpointName: string) => {
+        // Find assigned guards names
+        const assignedIds = cpAssignmentsMap[checkpointId] || [];
+        const guardNames = assignedIds.map(id => siteGuards.find(g => g.id === id)?.name).filter(Boolean).join(', ') || 'None assigned';
+
+        // We create an invisible HTML Canvas to draw the image + text!
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 550;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // 1. Draw white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Draw Header Text
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText('EAGLE EYE SECURITY', 200, 50);
+
+        ctx.font = '18px sans-serif';
+        ctx.fillText(`Checkpoint: ${checkpointName}`, 200, 85);
+
+        // 3. Load QR Image and draw it
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${checkpointId}`;
+
+        img.onload = () => {
+            // Draw QR
+            ctx.drawImage(img, 75, 110, 250, 250);
+
+            // Draw Checkpoint UUID
+            ctx.font = '12px monospace';
+            ctx.fillStyle = '#666666';
+            ctx.fillText(`ID: ${checkpointId}`, 200, 390);
+
+            // Draw Assigned Guards List
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('Authorized Personnel:', 200, 430);
+
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = '#333333';
+
+            // Quick word-wrap logic so names don't flow off the image
+            const maxWidth = 340;
+            const words = guardNames.split(', ');
+            let line = '';
+            let y = 460;
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + (n < words.length - 1 ? ', ' : '');
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    ctx.fillText(line, 200, y);
+                    line = words[n] + (n < words.length - 1 ? ', ' : '');
+                    y += 25;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, 200, y);
+
+            // 4. Trigger the Download!
+            const link = document.createElement('a');
+            link.download = `EES_QR_${checkpointName.replace(/\\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
     };
 
     if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center font-bold text-xl text-ees-navy">Loading HQ...</div>;
@@ -478,21 +586,53 @@ export default function AdminDashboard() {
                                     <button type="submit" className="bg-ees-navy text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">Add</button>
                                 </form>
                                 <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                                    {checkpoints.map(cp => (
-                                        <div key={cp.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                                            <div className="flex items-center gap-4">
-                                                <div className="bg-white p-1 border rounded shadow-sm"><QRCodeSVG value={cp.id} size={50} /></div>
-                                                <div><p className="font-bold text-ees-navy">{cp.name}</p><p className="text-xs text-gray-500 font-mono mt-1">ID: {cp.id.substring(0, 8)}...</p></div>
+                                    {checkpoints.map(cp => {
+                                        // Grab the names of the guards linked to this specific QR code
+                                        const assignedIds = cpAssignmentsMap[cp.id] || [];
+                                        const assignedNames = assignedIds.map(id => siteGuards.find(g => g.id === id)?.name).filter(Boolean);
+
+                                        return (
+                                            <div key={cp.id} className="flex flex-col p-4 bg-gray-50 border border-gray-700 rounded-xl">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="bg-white p-1 border border-gray-300 rounded shadow-sm shrink-0">
+                                                            <QRCodeSVG value={cp.id} size={50} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-black">{cp.name}</p>
+                                                            <p className="text-xs text-gray-800 font-mono mt-1">ID: {cp.id.substring(0, 8)}...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 shrink-0">
+                                                        <button onClick={() => { setActiveCpForAssign(cp); setShowCpAssignModal(true); }} className="text-blue-400 hover:bg-blue-900/30 p-2 rounded-lg transition" title="Assign Guards to this QR">
+                                                            <LinkIcon className="h-5 w-5" />
+                                                        </button>
+                                                        <button onClick={() => downloadQRCode(cp.id, cp.name)} className="text-green-400 hover:bg-green-900/30 p-2 rounded-lg transition" title="Download QR as Image">
+                                                            <Download className="h-5 w-5" />
+                                                        </button>
+                                                        <button onClick={() => printQRCode(cp.id, cp.name)} className="text-ees-red hover:bg-red-900/30 p-2 rounded-lg transition" title="Print QR Code">
+                                                            <Printer className="h-5 w-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Show assigned guard names right in the list */}
+                                                <div className="mt-3 pt-3 border-t border-gray-800 flex flex-wrap gap-2">
+                                                    {assignedNames.length > 0 ? (
+                                                        assignedNames.map((n, i) => (
+                                                            <span key={i} className="text-[10px] font-bold bg-blue-900/30 text-black border border-blue-800 px-2 py-1 rounded">
+                                                                {n}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                                                            No guards linked yet
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <button
-                                                onClick={() => { setActiveCpForAssign(cp); setShowCpAssignModal(true); }}
-                                                className="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition"
-                                                title="Assign Guards to this QR"
-                                            >
-                                                <Link2 className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
 
@@ -586,7 +726,7 @@ export default function AdminDashboard() {
                                     const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
 
                                     // 3. Determine Risk Status
-                                    const intervalLimit = selectedSite.patrol_interval_mins || 120;
+                                    const intervalLimit = selectedSite.patrol_interval_mins || 60;
                                     const isAtRisk = diffMins > intervalLimit;
 
                                     return (
