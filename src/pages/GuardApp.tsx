@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Camera, QrCode, LogOut, Building2 } from 'lucide-react';
+import { Shield, Camera, QrCode, LogOut, Building2, Loader2, Lock } from 'lucide-react';
 
 export default function GuardApp() {
     const [guards, setGuards] = useState<any[]>([]);
@@ -10,43 +10,47 @@ export default function GuardApp() {
     const [selectedGuard, setSelectedGuard] = useState<any | null>(null);
     const [selectedSite, setSelectedSite] = useState<any | null>(null);
 
+    // NEW: States for checking if they are allowed to patrol
+    const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
+    const [checkingStatus, setCheckingStatus] = useState<boolean>(false);
+
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchData();
+        fetchInitialData();
+    }, []);
+
+    // NEW: Whenever the site or guard changes (or they return from the clock-in page), check their status!
+    useEffect(() => {
+        if (selectedGuard && selectedSite) {
+            checkAttendanceStatus();
+        }
+    }, [selectedGuard, selectedSite]);
+
+    const fetchInitialData = async () => {
         const savedGuard = localStorage.getItem('active_guard');
         const savedSite = localStorage.getItem('active_site');
 
         if (savedGuard) setSelectedGuard(JSON.parse(savedGuard));
         if (savedSite) setSelectedSite(JSON.parse(savedSite));
-    }, []);
 
-    const fetchData = async () => {
-        // Fetch both Guards and Sites at the same time
-        const [guardRes, siteRes] = await Promise.all([
-            supabase.from('guards').select('*').ilike('status', 'active'),
-            supabase.from('sites').select('*').order('name')
-        ]);
-
-        if (guardRes.data) setGuards(guardRes.data);
-        if (siteRes.data) setSites(siteRes.data);
+        const { data } = await supabase.from('guards').select('*').ilike('status', 'active');
+        if (data) setGuards(data);
         setLoading(false);
     };
-
-    // ... inside GuardApp.tsx ...
 
     const handleLogin = async (guard: any) => {
         setSelectedGuard(guard);
         localStorage.setItem('active_guard', JSON.stringify(guard));
 
+        // Fetch ONLY the sites assigned to this specific guard
         const { data } = await supabase
             .from('site_assignments')
             .select('shift_slot, sites(*)')
             .eq('guard_id', guard.id);
 
         if (data) {
-            // WE MERGE THE SHIFT SLOT INTO THE SITE OBJECT HERE
             const assignedSites = data.map((item: any) => ({
                 ...item.sites,
                 shift_slot: item.shift_slot
@@ -57,8 +61,6 @@ export default function GuardApp() {
         }
     };
 
-    // (Delete the `supabase.from('sites').select('*')` part from the `fetchData` useEffect at the top of the file, because we only fetch sites AFTER a guard logs in now!)
-
     const handleSiteSelect = (site: any) => {
         setSelectedSite(site);
         localStorage.setItem('active_site', JSON.stringify(site));
@@ -67,8 +69,28 @@ export default function GuardApp() {
     const handleLogout = () => {
         setSelectedGuard(null);
         setSelectedSite(null);
+        setIsClockedIn(false);
         localStorage.removeItem('active_guard');
         localStorage.removeItem('active_site');
+    };
+
+    // --- NEW: Check if Guard is currently clocked in ---
+    const checkAttendanceStatus = async () => {
+        setCheckingStatus(true);
+        const { data } = await supabase
+            .from('attendance_logs')
+            .select('status')
+            .eq('guard_id', selectedGuard.id)
+            .eq('site_id', selectedSite.id)
+            .order('clock_in_time', { ascending: false })
+            .limit(1);
+
+        if (data && data.length > 0 && data[0].status === 'clocked_in') {
+            setIsClockedIn(true);
+        } else {
+            setIsClockedIn(false);
+        }
+        setCheckingStatus(false);
     };
 
     if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading Terminal...</div>;
@@ -134,13 +156,29 @@ export default function GuardApp() {
                                         </button>
                                     </div>
 
-                                    <button onClick={() => navigate('/guard/clock-in')} className="w-full bg-ees-red hover:bg-red-700 text-white p-6 rounded-2xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] flex flex-col items-center gap-3 border-2 border-red-800">
-                                        <Camera className="h-10 w-10" /> CLOCK IN (SELFIE)
+                                    {/* ATTENDANCE BUTTON (Always Visible) */}
+                                    <button onClick={() => navigate('/guard/clock-in')} className={`w-full text-white p-6 rounded-2xl font-bold text-lg transition-all shadow-[0_0_20px_rgba(0,0,0,0.3)] flex flex-col items-center gap-3 border-2 ${isClockedIn ? 'bg-blue-600 hover:bg-blue-700 border-blue-800' : 'bg-ees-red hover:bg-red-700 border-red-800'}`}>
+                                        <Camera className="h-10 w-10" />
+                                        {isClockedIn ? 'END SHIFT (CLOCK OUT)' : 'START SHIFT (CLOCK IN)'}
                                     </button>
 
-                                    <button onClick={() => navigate('/guard/patrol')} className="w-full bg-ees-navy hover:bg-blue-900 text-white p-6 rounded-2xl font-bold text-lg transition-all shadow-lg flex flex-col items-center gap-3 border-2 border-blue-900 mt-2">
-                                        <QrCode className="h-10 w-10" /> NIGHT PATROL (SCAN)
-                                    </button>
+                                    {/* NIGHT PATROL BUTTON (Conditionally Rendered) */}
+                                    {checkingStatus ? (
+                                        <div className="flex justify-center p-4">
+                                            <Loader2 className="h-8 w-8 text-gray-500 animate-spin" />
+                                        </div>
+                                    ) : isClockedIn ? (
+                                        <button onClick={() => navigate('/guard/patrol')} className="w-full bg-ees-navy hover:bg-blue-900 text-white p-6 rounded-2xl font-bold text-lg transition-all shadow-lg flex flex-col items-center gap-3 border-2 border-blue-900 mt-2 animate-fade-in-up">
+                                            <QrCode className="h-10 w-10" /> NIGHT PATROL (SCAN)
+                                        </button>
+                                    ) : (
+                                        <div className="mt-2 p-6 border-2 border-dashed border-gray-700 bg-gray-800/50 rounded-2xl flex flex-col items-center text-center">
+                                            <Lock className="h-8 w-8 text-gray-600 mb-2" />
+                                            <p className="text-gray-500 text-sm font-bold tracking-widest uppercase">Patrol Locked</p>
+                                            <p className="text-gray-500 text-xs mt-1">Clock in to start patrolling.</p>
+                                        </div>
+                                    )}
+
                                 </div>
                             )}
                 </div>

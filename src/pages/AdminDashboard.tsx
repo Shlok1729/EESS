@@ -29,6 +29,35 @@ export default function AdminDashboard() {
     useEffect(() => {
         fetchSites();
     }, []);
+    useEffect(() => {
+        // If no site is selected, don't listen
+        if (!selectedSite) return;
+
+        // Open a live WebSocket connection
+        const realtimeChannel = supabase
+            .channel('live-site-updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Listen for INSERTS, UPDATES, and DELETES
+                    schema: 'public',
+                    table: 'attendance_logs',
+                    filter: `site_id=eq.${selectedSite.id}` // Only listen for the site you are looking at
+                },
+                (payload) => {
+                    console.log('Live update received!', payload);
+                    // Silently refresh the data for this site without reloading the page!
+                    handleSiteClick(selectedSite);
+                }
+            )
+            .subscribe();
+
+        // Cleanup: Close the connection if you click a different site
+        return () => {
+            supabase.removeChannel(realtimeChannel);
+        };
+    }, [selectedSite]); // This effect restarts whenever you click a new site
+
 
     const fetchSites = async () => {
         setLoading(true);
