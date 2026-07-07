@@ -9,7 +9,8 @@ const GuardPatrol = () => {
     const [message, setMessage] = useState('Point camera at the Checkpoint QR code');
 
     // Hardcoded for testing right now (We will dynamically fetch these when we build the Clock-In system)
-    const DUMMY_GUARD_ID = null; // We can leave this null in the DB for our first test
+    const activeGuard = JSON.parse(localStorage.getItem('active_guard') || '{}');
+    const GUARD_ID = activeGuard.id || null;// We can leave this null in the DB for our first test
 
     const handleScan = async (scannedText: string) => {
         if (scanStatus === 'processing' || scanStatus === 'success') return;
@@ -31,7 +32,7 @@ const GuardPatrol = () => {
                         const { error } = await supabase.from('patrol_logs').insert([
                             {
                                 checkpoint_id: scannedText,
-                                guard_id: DUMMY_GUARD_ID,
+                                guard_id: GUARD_ID,
                                 lat: lat,
                                 lng: lng,
                                 status: 'success'

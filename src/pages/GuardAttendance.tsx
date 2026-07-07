@@ -8,7 +8,8 @@ const GuardAttendance = () => {
     const [message, setMessage] = useState('Please clock in to start your shift.');
 
     // DUMMY DATA FOR TESTING
-    const DUMMY_GUARD_ID = null;
+    const activeGuard = JSON.parse(localStorage.getItem('active_guard') || '{}');
+    const GUARD_ID = activeGuard.id || null;
     const DUMMY_SITE_ID = null;
     // Let's assume the "Factory" is roughly near your current city coordinates
     const SITE_LAT = 28.8386; // Moradabad Lat
@@ -59,7 +60,7 @@ const GuardAttendance = () => {
                         // 3. Save to Database
                         const { error: dbError } = await supabase.from('attendance_logs').insert([
                             {
-                                guard_id: DUMMY_GUARD_ID,
+                                guard_id: GUARD_ID,
                                 site_id: DUMMY_SITE_ID,
                                 lat: guardLat,
                                 lng: guardLng,
@@ -133,8 +134,8 @@ const GuardAttendance = () => {
                 )}
 
                 <p className={`mt-8 text-lg font-medium ${status === 'success' ? 'text-green-400' :
-                        status === 'error' ? 'text-red-400' :
-                            'text-gray-300'
+                    status === 'error' ? 'text-red-400' :
+                        'text-gray-300'
                     }`}>
                     {message}
                 </p>
