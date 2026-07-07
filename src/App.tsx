@@ -9,6 +9,7 @@ import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import Loader from './components/Loader';
 import GuardPatrol from './pages/GuardPatrol';
+import GuardAttendance from './pages/GuardAttendance';
 
 
 const AppContent = () => {
@@ -30,6 +31,7 @@ const AppContent = () => {
 
         </Route>
         <Route path="/guard/patrol" element={<GuardPatrol />} />
+        <Route path="/guard/clock-in" element={<GuardAttendance />} />
       </Routes>
     </>
   );
