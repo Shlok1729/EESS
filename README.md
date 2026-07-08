@@ -1,4 +1,4 @@
-# 🛡️ Eagle Eye Tech Ecosystem (EESS)
+# 🛡️ Eagle Eye Security Services (EESS)
 
 > **Enterprise Security Workforce Management Platform**  
 > A scalable, real-time Security Workforce Management platform that transforms traditional security agencies into a fully automated, technology-driven ecosystem.
