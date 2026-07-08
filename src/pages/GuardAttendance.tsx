@@ -187,9 +187,31 @@ const GuardAttendance = () => {
 
                         } else {
                             // ==========================================
-                            // CLOCK IN LOGIC (UPLOAD NEW PHOTO)
+                            // CLOCK IN LOGIC (WITH DEVICE LOCK)
                             // ==========================================
 
+                            // 1. Get or Create the Phone's Digital Fingerprint
+                            let deviceId = localStorage.getItem('device_id');
+                            if (!deviceId) {
+                                deviceId = 'DEV-' + Math.random().toString(36).substring(2, 15);
+                                localStorage.setItem('device_id', deviceId);
+                            }
+
+                            // 2. Security Check: Is this phone already running a shift for someone else?
+                            const { data: lockCheck } = await supabase
+                                .from('attendance_logs')
+                                .select('guard_id, guards(name)')
+                                .eq('device_id', deviceId)
+                                .eq('status', 'clocked_in')
+                                .limit(1);
+
+                            if (lockCheck && lockCheck.length > 0 && lockCheck[0].guard_id !== GUARD_ID) {
+                                setStatus('error');
+                                setMessage(`DEVICE LOCKED: This phone is currently running an active shift for ${(lockCheck[0].guards as any).name}.`);
+                                return; // STOPS THE CLOCK IN PROCESS IMMEDIATELY!
+                            }
+
+                            // 3. Process Upload and Insert
                             const fileExt = file.name.split('.').pop();
                             const fileName = `${Date.now()}_guard_in.${fileExt}`;
 
@@ -204,7 +226,8 @@ const GuardAttendance = () => {
                                 lat: guardLat,
                                 lng: guardLng,
                                 selfie_url: publicUrl,
-                                status: 'clocked_in'
+                                status: 'clocked_in',
+                                device_id: deviceId // <-- Saves the fingerprint to the database!
                             }]);
 
                             if (dbError) throw dbError;

@@ -151,8 +151,7 @@ export default function GuardApp() {
                                 <div className="animate-fade-in-up">
                                     <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
                                         <p className="text-white font-bold text-lg">Hi, {selectedGuard.name}</p>
-                                        <button onClick={handleLogout} className="text-red-400 text-sm font-bold">Change</button>
-                                    </div>
+                                        {!isClockedIn && <button onClick={handleLogout} className="text-red-400 text-sm font-bold">Change Guard</button>}                                    </div>
                                     <h2 className="text-white text-lg font-bold mb-4 text-center">Where are you deployed today?</h2>
                                     <div className="space-y-4 max-h-[50vh] overflow-y-auto">
                                         {sites.map(site => (
@@ -175,9 +174,11 @@ export default function GuardApp() {
                                                     <Building2 className="h-3 w-3" /> {selectedSite.name}
                                                 </p>
                                             </div>
-                                            <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 transition">
-                                                <LogOut className="h-6 w-6" />
-                                            </button>
+                                            {!isClockedIn && (
+                                                <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 transition">
+                                                    <LogOut className="h-6 w-6" />
+                                                </button>
+                                            )}
                                         </div>
 
                                         {/* ATTENDANCE BUTTON (Always Visible) */}
