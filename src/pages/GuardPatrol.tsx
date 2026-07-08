@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { supabase } from '../lib/supabase';
-import { CheckCircle, XCircle, MapPin, ArrowLeft, Lock, Loader2, ListTodo } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowLeft, Lock, Loader2, ListTodo } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function GuardPatrol() {

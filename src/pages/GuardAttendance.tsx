@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { getDistance } from 'geolib';
-import { Camera, MapPin, CheckCircle, Loader2, LogOut, ArrowLeft, Clock } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, LogOut, ArrowLeft, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const GuardAttendance = () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Link2, CheckCircle, Download } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, CheckCircle, Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
         e.preventDefault();
         if (!newSiteData.name) return;
 
-        const { data, error } = await supabase.from('sites').insert([{
+        const { data } = await supabase.from('sites').insert([{
             name: newSiteData.name,
             address: newSiteData.address,
             lat: parseFloat(newSiteData.lat) || null,
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
         e.preventDefault();
         if (!newGuardData.name) return;
 
-        const { data, error } = await supabase.from('guards').insert([{ name: newGuardData.name, phone: newGuardData.phone, status: 'active' }]).select();
+        const { data } = await supabase.from('guards').insert([{ name: newGuardData.name, phone: newGuardData.phone, status: 'active' }]).select();
         if (data && data.length > 0) {
             setShowAddGuardModal(false);
             setNewGuardData({ name: '', phone: '' });
