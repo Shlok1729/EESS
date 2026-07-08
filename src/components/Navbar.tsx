@@ -34,9 +34,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`font-medium transition-colors text-sm uppercase tracking-wider ${
-                  location.pathname === link.path ? 'text-ees-red' : 'text-ees-navy hover:text-ees-red'
-                }`}
+                className={`font-medium transition-colors text-sm uppercase tracking-wider ${location.pathname === link.path ? 'text-ees-red' : 'text-ees-navy hover:text-ees-red'
+                  }`}
               >
                 {link.name}
               </Link>
@@ -44,15 +43,26 @@ const Navbar = () => {
           </div>
 
           {/* CTA */}
-          <div className="hidden md:flex">
-            <Link to="/contact" className="bg-ees-red hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-semibold transition-all transform hover:scale-105 shadow-md hover:shadow-lg">
+          {/* CTA & Client Login */}
+          <div className="hidden md:flex items-center gap-4">
+
+            <Link
+              to="/contact"
+              className="bg-ees-red hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-semibold transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+            >
               Get a Free Quote
+            </Link>
+            <Link
+              to="/client/login"
+              className="border-2 border-ees-navy text-ees-navy hover:bg-ees-navy hover:text-white px-5 py-2 rounded-md font-semibold transition-all shadow-sm flex items-center gap-2"
+            >
+              Client Login
             </Link>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button 
+            <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-ees-navy hover:text-ees-red focus:outline-none"
             >
@@ -70,16 +80,26 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`block px-3 py-2 text-base font-medium rounded-md ${
-                  location.pathname === link.path ? 'text-ees-red bg-gray-50' : 'text-ees-navy hover:text-ees-red hover:bg-gray-50'
-                }`}
+                className={`block px-3 py-2 text-base font-medium rounded-md ${location.pathname === link.path ? 'text-ees-red bg-gray-50' : 'text-ees-navy hover:text-ees-red hover:bg-gray-50'
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
               </Link>
             ))}
-            <div className="px-3 py-2">
-              <Link to="/contact" onClick={() => setIsOpen(false)} className="block w-full bg-ees-red text-white px-4 py-2 rounded-md font-semibold text-center">
+            <div className="px-3 py-4 space-y-3 border-t border-gray-100 mt-2 gap-3">
+              <Link
+                to="/client/login"
+                onClick={() => setIsOpen(false)}
+                className="block w-full border-2 border-ees-navy text-ees-navy hover:bg-gray-50 px-4 py-2 rounded-md font-semibold text-center transition-colors"
+              >
+                Client Login
+              </Link>
+              <Link
+                to="/contact"
+                onClick={() => setIsOpen(false)}
+                className="block w-full bg-ees-red text-white hover:bg-red-700 px-4 py-2 rounded-md font-semibold text-center transition-colors"
+              >
                 Get a Free Quote
               </Link>
             </div>

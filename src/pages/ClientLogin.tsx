@@ -44,7 +44,7 @@ export default function ClientLogin() {
                     {error && <p className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200 text-center font-bold">{error}</p>}
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Company Email</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Registered Email</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                             <input type="email" required className="w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-ees-red" value={email} onChange={e => setEmail(e.target.value)} />
