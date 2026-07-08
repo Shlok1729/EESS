@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import GuardApp from './pages/GuardApp';
 import ClientLogin from './pages/ClientLogin';
 import ClientDashboard from './pages/ClientDashboard';
+import AdminLogin from './pages/AdminLogin';
 
 
 const AppContent = () => {
@@ -40,6 +41,7 @@ const AppContent = () => {
         <Route path="/guard" element={<GuardApp />} />
         <Route path="/client/login" element={<ClientLogin />} />
         <Route path="/client/dashboard" element={<ClientDashboard />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
       </Routes>
     </>
   );

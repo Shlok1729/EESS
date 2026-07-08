@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, CheckCircle, Download } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, CheckCircle, Download, LogOut } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function AdminDashboard() {
@@ -11,10 +12,13 @@ export default function AdminDashboard() {
     const [sites, setSites] = useState<any[]>([]);
     const [selectedSite, setSelectedSite] = useState<any | null>(null);
     const [patrolLogs, setPatrolLogs] = useState<any[]>([]);
+    const [showAllLivePatrols, setShowAllLivePatrols] = useState(false);
 
     const [siteGuards, setSiteGuards] = useState<any[]>([]);
     const [checkpoints, setCheckpoints] = useState<any[]>([]);
+
     const [loading, setLoading] = useState(true);
+    const [showAllQrCheckpoints, setShowAllQrCheckpoints] = useState(false);
 
     const [newCheckpointName, setNewCheckpointName] = useState('');
 
@@ -30,6 +34,17 @@ export default function AdminDashboard() {
 
     const [newSiteData, setNewSiteData] = useState({ name: '', address: '', lat: '', lng: '', radius: 100, shift_mode: 12, client_email: '' });
     const [newGuardData, setNewGuardData] = useState({ name: '', phone: '' });
+    const navigate = useNavigate(); // Add this line
+
+    // Add this Auth Checker useEffect right here at the top
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                navigate('/admin/login'); // Kick them out if not logged in!
+            }
+        });
+    }, [navigate]);
+
 
     useEffect(() => {
         fetchSites();
@@ -54,6 +69,10 @@ export default function AdminDashboard() {
         const { data } = await supabase.from('sites').select('*').order('created_at', { ascending: false });
         if (data) setSites(data);
         setLoading(false);
+    };
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/admin/login');
     };
 
     const handleSiteClick = async (site: any) => {
@@ -566,9 +585,14 @@ export default function AdminDashboard() {
                     ))}
                 </div>
 
-                <div className="p-4 border-t border-gray-200 bg-white md:bg-gray-50">
-                    <button onClick={() => setShowAddGuardModal(true)} className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white p-2.5 sm:p-3 rounded-xl hover:bg-gray-900 transition shadow-sm font-bold text-sm sm:text-base">
-                        <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" /> Register Guard
+                <div className="p-4 border-t border-gray-700 bg-gray-50 space-y-3">
+                    <button onClick={() => setShowAddGuardModal(true)} className="w-full flex items-center justify-center gap-2 bg-gray-800 border border-gray-700 text-white p-3 rounded-xl hover:bg-gray-700 transition shadow-sm font-bold">
+                        <UserPlus className="h-5 w-5 text-ees-red" /> Register Guard
+                    </button>
+
+                    {/* NEW: SECURE LOGOUT BUTTON */}
+                    <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-900/20 border border-red-900/30 text-red-400 p-3 rounded-xl hover:bg-red-900/40 transition shadow-sm font-bold">
+                        <LogOut className="h-5 w-5" /> Secure Logout
                     </button>
                 </div>
             </div>
@@ -610,8 +634,12 @@ export default function AdminDashboard() {
                                     <button type="submit" className="bg-ees-navy text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition font-bold text-sm sm:text-base">Add</button>
                                 </form>
 
-                                <div className="space-y-3 sm:space-y-4 max-h-[400px] overflow-y-auto pr-1 sm:pr-2 scrollbar-thin">
-                                    {checkpoints.map(cp => {
+                                <div className="space-y-3 sm:space-y-4 pr-1 sm:pr-2">
+                                    {checkpoints.length === 0 ? (
+                                        <p className="text-gray-500 text-sm text-center py-4">No checkpoints added yet.</p>
+                                    ) : null}
+
+                                    {(showAllQrCheckpoints ? checkpoints : checkpoints.slice(0, 5)).map(cp => {
                                         const assignedIds = cpAssignmentsMap[cp.id] || [];
                                         const assignedNames = assignedIds.map(id => siteGuards.find(g => g.id === id)?.name).filter(Boolean);
 
@@ -656,6 +684,18 @@ export default function AdminDashboard() {
                                             </div>
                                         )
                                     })}
+
+                                    {/* Toggle Button Footer */}
+                                    {checkpoints.length > 5 && (
+                                        <div className="pt-3 flex justify-center mt-2">
+                                            <button
+                                                onClick={() => setShowAllQrCheckpoints(!showAllQrCheckpoints)}
+                                                className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 bg-gray-50 shadow-sm"
+                                            >
+                                                {showAllQrCheckpoints ? 'Show Less' : `See All Checkpoints (${checkpoints.length})`}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -749,34 +789,66 @@ export default function AdminDashboard() {
                                     const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
                                     const intervalLimit = selectedSite.patrol_interval_mins || 60;
                                     const isAtRisk = diffMins > intervalLimit;
+                                    const activeMonitoredGuards = siteGuards.filter(g => g.is_clocked_in);
 
                                     return (
-                                        <div key={g.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isAtRisk ? 'bg-red-50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-gray-50 border-gray-200'}`}>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300 shrink-0">
-                                                        {g.active_selfie ? <img src={g.active_selfie} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-ees-navy text-white flex items-center justify-center font-bold text-xs">{g.name.charAt(0)}</div>}
-                                                    </div>
-                                                    <p className="font-bold text-gray-800 text-sm sm:text-base truncate">{g.name}</p>
-                                                </div>
-                                                {isAtRisk ? <ShieldAlert className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 animate-pulse shrink-0" /> : <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />}
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase">Latest Activity:</p>
-                                                {lastScan ? (
-                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">Scanned ID: {lastScan.checkpoint_id.substring(0, 8)}</p>
-                                                ) : (
-                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800">Clocked In (No scans yet)</p>
+                                        <div className="w-full">
+                                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                                                {activeMonitoredGuards.length === 0 && (
+                                                    <p className="text-gray-400 text-sm col-span-full py-4 text-center">No guards currently on duty to monitor.</p>
                                                 )}
 
-                                                <div className={`mt-2 sm:mt-3 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm font-bold flex items-center justify-between ${isAtRisk ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700'}`}>
-                                                    <span>{isAtRisk ? 'PATROL MISSED!' : 'ON TRACK'}</span>
-                                                    <span>{diffMins} mins ago</span>
-                                                </div>
+                                                {(showAllLivePatrols ? activeMonitoredGuards : activeMonitoredGuards.slice(0, 6)).map(g => {
+                                                    const guardScans = patrolLogs.filter(log => log.guard_id === g.id);
+                                                    const lastScan = guardScans.length > 0 ? guardScans[0] : null;
+                                                    const lastActivityTime = lastScan ? new Date(lastScan.scanned_at) : new Date(g.clock_in_time);
+                                                    const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
+                                                    const intervalLimit = selectedSite.patrol_interval_mins || 60;
+                                                    const isAtRisk = diffMins > intervalLimit;
+
+                                                    return (
+                                                        <div key={g.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isAtRisk ? 'bg-red-50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-gray-50 border-gray-200'}`}>
+                                                            <div className="flex justify-between items-start mb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300 shrink-0">
+                                                                        {g.active_selfie ? <img src={g.active_selfie} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-ees-navy text-white flex items-center justify-center font-bold text-xs">{g.name.charAt(0)}</div>}
+                                                                    </div>
+                                                                    <p className="font-bold text-gray-800 text-sm sm:text-base truncate">{g.name}</p>
+                                                                </div>
+                                                                {isAtRisk ? <ShieldAlert className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 animate-pulse shrink-0" /> : <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />}
+                                                            </div>
+
+                                                            <div className="space-y-1">
+                                                                <p className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase">Latest Activity:</p>
+                                                                {lastScan ? (
+                                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">Scanned ID: {lastScan.checkpoint_id.substring(0, 8)}</p>
+                                                                ) : (
+                                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800">Clocked In (No scans yet)</p>
+                                                                )}
+
+                                                                <div className={`mt-2 sm:mt-3 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm font-bold flex items-center justify-between ${isAtRisk ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700'}`}>
+                                                                    <span>{isAtRisk ? 'PATROL MISSED!' : 'ON TRACK'}</span>
+                                                                    <span>{diffMins} mins ago</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
+
+                                            {/* Toggle Button Footer */}
+                                            {activeMonitoredGuards.length > 6 && (
+                                                <div className="pt-4 flex justify-center mt-4 border-t border-gray-100">
+                                                    <button
+                                                        onClick={() => setShowAllLivePatrols(!showAllLivePatrols)}
+                                                        className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 bg-gray-50 shadow-sm"
+                                                    >
+                                                        {showAllLivePatrols ? 'Show Less' : `See All Monitored Guards (${activeMonitoredGuards.length})`}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
-                                    )
+                                    );
                                 })}
                             </div>
                         </div>

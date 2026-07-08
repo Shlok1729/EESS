@@ -12,6 +12,10 @@ export default function ClientDashboard() {
     const [siteCheckpoints, setSiteCheckpoints] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [clientEmail, setClientEmail] = useState('');
+    const [showAllPatrols, setShowAllPatrols] = useState(false);
+    const [showAllTeam, setShowAllTeam] = useState(false);
+    const [showAllCheckpoints, setShowAllCheckpoints] = useState(false);
+    const [showAllHistory, setShowAllHistory] = useState(false);
 
     const navigate = useNavigate();
 
@@ -159,8 +163,8 @@ export default function ClientDashboard() {
                                 key={site.id}
                                 onClick={() => { setSelectedSite(site); fetchSiteData(site); }}
                                 className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base whitespace-nowrap transition-all flex-shrink-0 ${selectedSite?.id === site.id
-                                        ? 'bg-ees-navy text-white shadow-md'
-                                        : 'bg-white text-gray-600 border border-gray-200 hover:border-ees-navy'
+                                    ? 'bg-ees-navy text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:border-ees-navy'
                                     }`}
                             >
                                 {site.name}
@@ -229,6 +233,7 @@ export default function ClientDashboard() {
                         </div>
 
                         {/* RECENT PATROLS LOG */}
+                        {/* RECENT PATROLS LOG */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                             <div className="bg-gray-50 p-4 md:p-5 border-b border-gray-200 flex justify-between items-center">
                                 <h3 className="text-sm md:text-lg font-bold text-ees-navy flex items-center gap-2">
@@ -244,7 +249,7 @@ export default function ClientDashboard() {
                                     <>
                                         {/* Mobile View: Stacked Cards */}
                                         <div className="md:hidden flex flex-col divide-y divide-gray-100">
-                                            {patrolLogs.map(log => (
+                                            {(showAllPatrols ? patrolLogs : patrolLogs.slice(0, 5)).map(log => (
                                                 <div key={log.id} className="p-4 flex justify-between items-center bg-white hover:bg-gray-50 transition">
                                                     <div className="flex-1 min-w-0 pr-3">
                                                         <p className="text-sm font-bold text-ees-navy truncate">{log.checkpoint_name}</p>
@@ -270,7 +275,7 @@ export default function ClientDashboard() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {patrolLogs.map(log => (
+                                                    {(showAllPatrols ? patrolLogs : patrolLogs.slice(0, 5)).map(log => (
                                                         <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
                                                             <td className="p-4 font-bold text-gray-900 whitespace-nowrap">{formatTime(log.scanned_at)}</td>
                                                             <td className="p-4 font-semibold text-ees-navy whitespace-nowrap">{log.checkpoint_name}</td>
@@ -283,6 +288,18 @@ export default function ClientDashboard() {
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        {/* Toggle Button Footer */}
+                                        {patrolLogs.length > 5 && (
+                                            <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-center">
+                                                <button
+                                                    onClick={() => setShowAllPatrols(!showAllPatrols)}
+                                                    className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg hover:bg-gray-200"
+                                                >
+                                                    {showAllPatrols ? 'Show Less' : `See All (${patrolLogs.length})`}
+                                                </button>
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -299,11 +316,13 @@ export default function ClientDashboard() {
                                     <Users className="h-4 w-4 md:h-5 md:w-5 text-ees-red" /> Appointed Team
                                 </h3>
                             </div>
-                            <div className="p-3 md:p-4 space-y-2.5 max-h-[250px] md:max-h-[300px] overflow-y-auto scrollbar-thin">
+
+                            <div className="p-3 md:p-4 space-y-2.5">
                                 {assignedGuards.length === 0 ? (
                                     <p className="text-gray-500 text-sm text-center py-2">No guards assigned.</p>
                                 ) : null}
-                                {assignedGuards.map((ag, i) => (
+
+                                {(showAllTeam ? assignedGuards : assignedGuards.slice(0, 5)).map((ag, i) => (
                                     <div key={i} className="flex justify-between items-center p-3 border border-gray-100 rounded-xl bg-gray-50">
                                         <div className="truncate pr-3">
                                             <p className="font-bold text-gray-800 text-sm truncate">{ag.guards?.name}</p>
@@ -317,6 +336,18 @@ export default function ClientDashboard() {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Toggle Button Footer */}
+                            {assignedGuards.length > 5 && (
+                                <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-center">
+                                    <button
+                                        onClick={() => setShowAllTeam(!showAllTeam)}
+                                        className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg hover:bg-gray-200"
+                                    >
+                                        {showAllTeam ? 'Show Less' : `See All (${assignedGuards.length})`}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* SITE CHECKPOINTS */}
@@ -329,19 +360,34 @@ export default function ClientDashboard() {
                                     {siteCheckpoints.length} Pts
                                 </span>
                             </div>
-                            <div className="p-3 md:p-4 space-y-2 max-h-[200px] md:max-h-[250px] overflow-y-auto scrollbar-thin">
+
+                            <div className="p-3 md:p-4 space-y-2">
                                 {siteCheckpoints.length === 0 ? (
                                     <p className="text-gray-500 text-sm text-center py-2">No checkpoints added.</p>
                                 ) : null}
-                                {siteCheckpoints.map(cp => (
+
+                                {(showAllCheckpoints ? siteCheckpoints : siteCheckpoints.slice(0, 5)).map(cp => (
                                     <div key={cp.id} className="p-2.5 md:p-3 border border-gray-100 rounded-lg bg-gray-50 text-xs md:text-sm font-semibold text-gray-700 flex items-center gap-2.5 truncate">
                                         <div className="w-2 h-2 rounded-full bg-ees-red shrink-0"></div>
                                         <span className="truncate">{cp.name}</span>
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Toggle Button Footer */}
+                            {siteCheckpoints.length > 5 && (
+                                <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-center">
+                                    <button
+                                        onClick={() => setShowAllCheckpoints(!showAllCheckpoints)}
+                                        className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg hover:bg-gray-200"
+                                    >
+                                        {showAllCheckpoints ? 'Show Less' : `See All (${siteCheckpoints.length})`}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
+                        {/* COMPLETED SHIFTS HISTORY */}
                         {/* COMPLETED SHIFTS HISTORY */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                             <div className="bg-gray-50 p-4 border-b border-gray-200">
@@ -350,25 +396,47 @@ export default function ClientDashboard() {
                                 </h3>
                             </div>
                             <div className="p-3 md:p-4 space-y-2.5">
-                                {attendanceLogs.filter(l => l.status === 'clocked_out' || l.status === 'auto_clocked_out').length === 0 && (
-                                    <p className="text-gray-500 text-sm text-center py-2">No completed shifts yet.</p>
-                                )}
-                                {attendanceLogs.filter(l => l.status === 'clocked_out' || l.status === 'auto_clocked_out').slice(0, 5).map(log => (
-                                    <div key={log.id} className="p-3 border border-gray-100 rounded-xl bg-gray-50">
-                                        <div className="flex justify-between items-start mb-2 gap-2">
-                                            <p className="font-bold text-gray-800 text-sm truncate">{log.guards?.name}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 whitespace-nowrap shrink-0 pt-0.5">
-                                                {formatDate(log.clock_in_time)}
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-row justify-between items-center text-[10px] sm:text-xs font-semibold bg-white p-2 rounded border border-gray-100">
-                                            <span className="text-green-600">In: {formatTime(log.clock_in_time)}</span>
-                                            <span className={log.status === 'auto_clocked_out' ? 'text-red-500' : 'text-blue-600'}>
-                                                Out: {log.clock_out_time ? formatTime(log.clock_out_time) : 'Auto'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                                {(() => {
+                                    // Filter the logs once to avoid repeating the logic
+                                    const completedShifts = attendanceLogs.filter(l => l.status === 'clocked_out' || l.status === 'auto_clocked_out');
+
+                                    return (
+                                        <>
+                                            {completedShifts.length === 0 && (
+                                                <p className="text-gray-500 text-sm text-center py-2">No completed shifts yet.</p>
+                                            )}
+
+                                            {(showAllHistory ? completedShifts : completedShifts.slice(0, 5)).map(log => (
+                                                <div key={log.id} className="p-3 border border-gray-100 rounded-xl bg-gray-50">
+                                                    <div className="flex justify-between items-start mb-2 gap-2">
+                                                        <p className="font-bold text-gray-800 text-sm truncate">{log.guards?.name}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 whitespace-nowrap shrink-0 pt-0.5">
+                                                            {formatDate(log.clock_in_time)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex flex-row justify-between items-center text-[10px] sm:text-xs font-semibold bg-white p-2 rounded border border-gray-100">
+                                                        <span className="text-green-600">In: {formatTime(log.clock_in_time)}</span>
+                                                        <span className={log.status === 'auto_clocked_out' ? 'text-red-500' : 'text-blue-600'}>
+                                                            Out: {log.clock_out_time ? formatTime(log.clock_out_time) : 'Auto'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* Toggle Button Footer */}
+                                            {completedShifts.length > 5 && (
+                                                <div className="bg-gray-50 border-t border-gray-100 p-3 flex justify-center -mx-3 md:-mx-4 mb:-mb-3 md:-mb-4 mt-2">
+                                                    <button
+                                                        onClick={() => setShowAllHistory(!showAllHistory)}
+                                                        className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg hover:bg-gray-200"
+                                                    >
+                                                        {showAllHistory ? 'Show Less' : `See All (${completedShifts.length})`}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
 
