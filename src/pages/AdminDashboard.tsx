@@ -421,7 +421,7 @@ export default function AdminDashboard() {
                                 <input
                                     type="email"
                                     placeholder="e.g., manager@kaumo.com"
-                                    className="w-full bg-gray-50 border border-gray-600 text-white rounded-lg p-3 outline-none focus:border-ees-red placeholder-gray-500"
+                                    className="w-full bg-gray-50 border border-gray-600 text-black rounded-lg p-3 outline-none focus:border-ees-red placeholder-gray-500"
                                     value={newSiteData.client_email}
                                     onChange={e => setNewSiteData({ ...newSiteData, client_email: e.target.value })}
                                 />
