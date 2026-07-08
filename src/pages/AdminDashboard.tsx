@@ -777,80 +777,71 @@ export default function AdminDashboard() {
                                 </span>
                             </div>
 
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                                {siteGuards.filter(g => g.is_clocked_in).length === 0 && (
-                                    <p className="text-gray-400 text-sm col-span-full">No guards currently on duty to monitor.</p>
-                                )}
+                            {(() => {
+                                // We filter this exactly ONCE here
+                                const activeMonitoredGuards = siteGuards.filter(g => g.is_clocked_in);
 
-                                {siteGuards.filter(g => g.is_clocked_in).map(g => {
-                                    const guardScans = patrolLogs.filter(log => log.guard_id === g.id);
-                                    const lastScan = guardScans.length > 0 ? guardScans[0] : null;
-                                    const lastActivityTime = lastScan ? new Date(lastScan.scanned_at) : new Date(g.clock_in_time);
-                                    const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
-                                    const intervalLimit = selectedSite.patrol_interval_mins || 60;
-                                    const isAtRisk = diffMins > intervalLimit;
-                                    const activeMonitoredGuards = siteGuards.filter(g => g.is_clocked_in);
+                                return (
+                                    <div className="w-full">
+                                        {/* ONE single grid container */}
+                                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                                            {activeMonitoredGuards.length === 0 && (
+                                                <p className="text-gray-400 text-sm col-span-full py-4 text-center">No guards currently on duty to monitor.</p>
+                                            )}
 
-                                    return (
-                                        <div className="w-full">
-                                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                                                {activeMonitoredGuards.length === 0 && (
-                                                    <p className="text-gray-400 text-sm col-span-full py-4 text-center">No guards currently on duty to monitor.</p>
-                                                )}
+                                            {/* ONE single map function */}
+                                            {(showAllLivePatrols ? activeMonitoredGuards : activeMonitoredGuards.slice(0, 6)).map(g => {
+                                                const guardScans = patrolLogs.filter(log => log.guard_id === g.id);
+                                                const lastScan = guardScans.length > 0 ? guardScans[0] : null;
+                                                const lastActivityTime = lastScan ? new Date(lastScan.scanned_at) : new Date(g.clock_in_time);
+                                                const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
+                                                const intervalLimit = selectedSite.patrol_interval_mins || 60;
+                                                const isAtRisk = diffMins > intervalLimit;
 
-                                                {(showAllLivePatrols ? activeMonitoredGuards : activeMonitoredGuards.slice(0, 6)).map(g => {
-                                                    const guardScans = patrolLogs.filter(log => log.guard_id === g.id);
-                                                    const lastScan = guardScans.length > 0 ? guardScans[0] : null;
-                                                    const lastActivityTime = lastScan ? new Date(lastScan.scanned_at) : new Date(g.clock_in_time);
-                                                    const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
-
-
-
-                                                    return (
-                                                        <div key={g.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isAtRisk ? 'bg-red-50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-gray-50 border-gray-200'}`}>
-                                                            <div className="flex justify-between items-start mb-3">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300 shrink-0">
-                                                                        {g.active_selfie ? <img src={g.active_selfie} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-ees-navy text-white flex items-center justify-center font-bold text-xs">{g.name.charAt(0)}</div>}
-                                                                    </div>
-                                                                    <p className="font-bold text-gray-800 text-sm sm:text-base truncate">{g.name}</p>
+                                                return (
+                                                    <div key={g.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all flex flex-col justify-between ${isAtRisk ? 'bg-red-50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-gray-50 border-gray-200'}`}>
+                                                        <div className="flex justify-between items-start mb-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300 shrink-0">
+                                                                    {g.active_selfie ? <img src={g.active_selfie} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-ees-navy text-white flex items-center justify-center font-bold text-xs">{g.name.charAt(0)}</div>}
                                                                 </div>
-                                                                {isAtRisk ? <ShieldAlert className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 animate-pulse shrink-0" /> : <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />}
+                                                                <p className="font-bold text-gray-800 text-sm sm:text-base truncate">{g.name}</p>
                                                             </div>
+                                                            {isAtRisk ? <ShieldAlert className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 animate-pulse shrink-0" /> : <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 shrink-0" />}
+                                                        </div>
 
-                                                            <div className="space-y-1">
-                                                                <p className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase">Latest Activity:</p>
-                                                                {lastScan ? (
-                                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">Scanned ID: {lastScan.checkpoint_id.substring(0, 8)}</p>
-                                                                ) : (
-                                                                    <p className="text-xs sm:text-sm font-semibold text-gray-800">Clocked In (No scans yet)</p>
-                                                                )}
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase">Latest Activity:</p>
+                                                            {lastScan ? (
+                                                                <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">Scanned ID: {lastScan.checkpoint_id.substring(0, 8)}</p>
+                                                            ) : (
+                                                                <p className="text-xs sm:text-sm font-semibold text-gray-800">Clocked In (No scans yet)</p>
+                                                            )}
 
-                                                                <div className={`mt-2 sm:mt-3 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm font-bold flex items-center justify-between ${isAtRisk ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700'}`}>
-                                                                    <span>{isAtRisk ? 'PATROL MISSED!' : 'ON TRACK'}</span>
-                                                                    <span>{diffMins} mins ago</span>
-                                                                </div>
+                                                            <div className={`mt-2 sm:mt-3 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm font-bold flex items-center justify-between ${isAtRisk ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700'}`}>
+                                                                <span>{isAtRisk ? 'PATROL MISSED!' : 'ON TRACK'}</span>
+                                                                <span>{diffMins} mins ago</span>
                                                             </div>
                                                         </div>
-                                                    )
-                                                })}
-                                            </div>
-
-                                            {/* Toggle Button Footer */}
-                                            {activeMonitoredGuards.length > 6 && (
-                                                <div className="pt-4 flex justify-center mt-4 border-t border-gray-100">
-                                                    <button
-                                                        onClick={() => setShowAllLivePatrols(!showAllLivePatrols)}
-                                                        className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 bg-gray-50 shadow-sm"
-                                                    >
-                                                        {showAllLivePatrols ? 'Show Less' : `See All Monitored Guards (${activeMonitoredGuards.length})`}
-                                                    </button>
-                                                </div>
-                                            )}
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
-                                    );
-                                })}
-                            </div>
+
+                                        {/* Toggle Button Footer */}
+                                        {activeMonitoredGuards.length > 6 && (
+                                            <div className="pt-4 flex justify-center mt-4 border-t border-gray-100">
+                                                <button
+                                                    onClick={() => setShowAllLivePatrols(!showAllLivePatrols)}
+                                                    className="text-sm font-bold text-ees-navy hover:text-ees-red transition-colors px-4 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 bg-gray-50 shadow-sm"
+                                                >
+                                                    {showAllLivePatrols ? 'Show Less' : `See All Monitored Guards (${activeMonitoredGuards.length})`}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                     </div>
@@ -1198,7 +1189,7 @@ export default function AdminDashboard() {
 //                             {siteGuards.map(guard => {
 //                                 const isAssigned = (cpAssignmentsMap[activeCpForAssign?.id] || []).includes(guard.id);
 //                                 return (
-//                                     <div key={guard.id} onClick={() => toggleCpAssignment(guard.id)} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition ${isAssigned ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+//                                     <div key={guard.id} onClick={() => toggleCpAssignment(guard.id)} className={`flex items-cexnter justify-between p-3 rounded-lg border cursor-pointer transition ${isAssigned ? 'bg-blue-50 border-blue-500' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
 //                                         <div className="flex items-center gap-3">
 //                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${isAssigned ? 'bg-blue-600' : 'bg-gray-400'}`}>
 //                                                 {guard.name.charAt(0)}

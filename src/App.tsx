@@ -33,15 +33,17 @@ const AppContent = () => {
           <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/client/login" element={<ClientLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
         </Route>
         <Route path="/guard/patrol" element={<GuardPatrol />} />
         <Route path="/guard/clock-in" element={<GuardAttendance />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/guard" element={<GuardApp />} />
-        <Route path="/client/login" element={<ClientLogin />} />
+
         <Route path="/client/dashboard" element={<ClientDashboard />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+
       </Routes>
     </>
   );
