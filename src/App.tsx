@@ -12,6 +12,8 @@ import GuardPatrol from './pages/GuardPatrol';
 import GuardAttendance from './pages/GuardAttendance';
 import AdminDashboard from './pages/AdminDashboard';
 import GuardApp from './pages/GuardApp';
+import ClientLogin from './pages/ClientLogin';
+import ClientDashboard from './pages/ClientDashboard';
 
 
 const AppContent = () => {
@@ -36,6 +38,8 @@ const AppContent = () => {
         <Route path="/guard/clock-in" element={<GuardAttendance />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/guard" element={<GuardApp />} />
+        <Route path="/client/login" element={<ClientLogin />} />
+        <Route path="/client/dashboard" element={<ClientDashboard />} />
       </Routes>
     </>
   );
