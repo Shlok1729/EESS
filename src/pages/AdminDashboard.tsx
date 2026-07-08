@@ -803,8 +803,8 @@ export default function AdminDashboard() {
                                                     const lastScan = guardScans.length > 0 ? guardScans[0] : null;
                                                     const lastActivityTime = lastScan ? new Date(lastScan.scanned_at) : new Date(g.clock_in_time);
                                                     const diffMins = Math.floor((new Date().getTime() - lastActivityTime.getTime()) / 60000);
-                                                    const intervalLimit = selectedSite.patrol_interval_mins || 60;
-                                                    const isAtRisk = diffMins > intervalLimit;
+
+
 
                                                     return (
                                                         <div key={g.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isAtRisk ? 'bg-red-50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-gray-50 border-gray-200'}`}>
