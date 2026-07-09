@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Download, LogOut, Calculator, FileText, Receipt, CheckCircle, AlertTriangle, BarChart } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Download, LogOut, Calculator, FileText, Receipt, CheckCircle, AlertTriangle, BarChart } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 
@@ -425,8 +425,9 @@ export default function AdminDashboard() {
         }).filter(Boolean);
 
         reports.sort((a, b) => {
-            if (a.riskLevel === 'Red' && b.riskLevel !== 'Red') return -1;
-            if (a.riskLevel === 'Yellow' && b.riskLevel === 'Green') return -1;
+            if (!a || !b) return 0; // Safety check for TypeScript
+            if (a?.riskLevel === 'Red' && b?.riskLevel !== 'Red') return -1;
+            if (a?.riskLevel === 'Yellow' && b?.riskLevel === 'Green') return -1;
             return 1;
         });
 
