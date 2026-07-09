@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Download, LogOut, Calculator, FileText, Receipt, CheckCircle } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Download, LogOut, Calculator, FileText, Receipt, CheckCircle, AlertTriangle, BarChart } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
+
 
 
 export default function AdminDashboard() {
@@ -13,8 +14,11 @@ export default function AdminDashboard() {
     const [selectedSite, setSelectedSite] = useState<any | null>(null);
     const [patrolLogs, setPatrolLogs] = useState<any[]>([]);
     const [showAllLivePatrols, setShowAllLivePatrols] = useState(false);
+    const [recentShiftAudits, setRecentShiftAudits] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<'sites' | 'finance' | 'reports'>('sites'); // Updated
+    const [guardReports, setGuardReports] = useState<any[]>([]); // New
     // --- FINANCE & BILLING STATE ---
-    const [activeTab, setActiveTab] = useState<'sites' | 'finance'>('sites');
+
     const [financeMonth, setFinanceMonth] = useState(() => {
         const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     });
@@ -362,6 +366,132 @@ export default function AdminDashboard() {
             link.click();
         };
     };
+
+    // --- SMART REPORTS ENGINE ---
+    // --- SMART REPORTS ENGINE & MORNING AUDIT ---
+    // --- SMART REPORTS ENGINE & MORNING AUDIT ---
+    const generateSmartReports = async () => {
+        const [year, month] = financeMonth.split('-');
+        const startDate = new Date(Number(year), Number(month) - 1, 1).toISOString();
+        const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59).toISOString();
+
+        // NEW: We added call_logs to the Promise.all fetch!
+        const [guardsRes, attRes, patrolRes, callsRes] = await Promise.all([
+            supabase.from('guards').select('id, name').eq('status', 'active'),
+            supabase.from('attendance_logs').select('*').gte('clock_in_time', startDate).lte('clock_in_time', endDate),
+            supabase.from('patrol_logs').select('*').gte('scanned_at', startDate).lte('scanned_at', endDate),
+            supabase.from('call_logs').select('*').gte('called_at', startDate).lte('called_at', endDate)
+        ]);
+
+        const allGuards = guardsRes.data || [];
+        const allAtt = attRes.data || [];
+        const allPatrols = patrolRes.data || [];
+        const allCalls = callsRes.data || []; // Store the call logs
+
+        const checkIsLate = (clockInStr: string) => {
+            const date = new Date(clockInStr);
+            const istTime = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            const h = istTime.getHours();
+            const m = istTime.getMinutes();
+            const standardStarts = [3, 7, 11, 19];
+
+            let closestStart = standardStarts[0];
+            let minDiff = 24;
+            for (const start of standardStarts) {
+                let diff = Math.abs(h - start);
+                if (diff > 12) diff = 24 - diff;
+                if (diff < minDiff) { minDiff = diff; closestStart = start; }
+            }
+            if (h === closestStart && m > 15) return true;
+            if (h === closestStart + 1 || (closestStart === 19 && h === 20)) return true;
+            return false;
+        };
+
+        const reports = allGuards.map(guard => {
+            const guardShifts = allAtt.filter(a => a.guard_id === guard.id);
+            const guardPatrols = allPatrols.filter(p => p.guard_id === guard.id);
+            const totalShifts = guardShifts.length;
+            if (totalShifts === 0) return null;
+
+            const lateClockIns = guardShifts.filter(s => checkIsLate(s.clock_in_time)).length;
+            const autoClockOuts = guardShifts.filter(s => s.status === 'auto_clocked_out').length;
+            const avgScans = totalShifts > 0 ? Math.round(guardPatrols.length / totalShifts) : 0;
+
+            let riskLevel = 'Green';
+            if (lateClockIns > 2 || autoClockOuts > 1 || avgScans < 3) riskLevel = 'Yellow';
+            if (lateClockIns > 4 || autoClockOuts > 3 || avgScans < 1) riskLevel = 'Red';
+
+            return { ...guard, totalShifts, lateClockIns, autoClockOuts, totalScans: guardPatrols.length, avgScans, riskLevel };
+        }).filter(Boolean);
+
+        reports.sort((a, b) => {
+            if (a.riskLevel === 'Red' && b.riskLevel !== 'Red') return -1;
+            if (a.riskLevel === 'Yellow' && b.riskLevel === 'Green') return -1;
+            return 1;
+        });
+
+        setGuardReports(reports);
+
+        // 2. THE MORNING-AFTER AUDIT (Last 48 Hours)
+        const now = new Date();
+        const fortyEightHoursAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000));
+
+        const recentShifts = allAtt.filter(a =>
+            (a.status === 'clocked_out' || a.status === 'auto_clocked_out') &&
+            new Date(a.clock_out_time) > fortyEightHoursAgo
+        );
+
+        const audits = recentShifts.map(shift => {
+            const guard = allGuards.find(g => g.id === shift.guard_id);
+            const site = sites.find(s => s.id === shift.site_id);
+
+            const shiftPatrols = allPatrols.filter(p =>
+                p.guard_id === shift.guard_id &&
+                new Date(p.scanned_at) >= new Date(shift.clock_in_time) &&
+                new Date(p.scanned_at) <= new Date(shift.clock_out_time)
+            );
+
+            // NEW: Find Robot calls that happened during this shift
+            const shiftCalls = allCalls.filter(c =>
+                c.guard_id === shift.guard_id &&
+                new Date(c.called_at) >= new Date(shift.clock_in_time) &&
+                new Date(c.called_at) <= new Date(shift.clock_out_time)
+            );
+
+            // Tally up the responses (blocked/cut vs answered)
+            const callsTotal = shiftCalls.length;
+            const callsIgnored = shiftCalls.filter(c => c.status === 'busy' || c.status === 'failed' || c.status === 'no-answer').length;
+
+            const shiftHours = (new Date(shift.clock_out_time).getTime() - new Date(shift.clock_in_time).getTime()) / (1000 * 60 * 60);
+            const intervalHours = (site?.patrol_interval_mins || 120) / 60;
+            const expectedRounds = Math.floor(shiftHours / intervalHours);
+
+            let auditStatus = 'Clear';
+            if (expectedRounds > 0 && shiftPatrols.length === 0) auditStatus = 'Slept / 0 Scans';
+            else if (expectedRounds > 0 && shiftPatrols.length < expectedRounds) auditStatus = 'Missed Patrols';
+
+            return {
+                id: shift.id,
+                date: new Date(shift.clock_in_time).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' }),
+                guardName: guard?.name || 'Unknown',
+                siteName: site?.name || 'Unknown',
+                shiftDuration: shiftHours.toFixed(1),
+                totalScans: shiftPatrols.length,
+                expectedRounds: expectedRounds,
+                status: auditStatus,
+                wasAutoClockedOut: shift.status === 'auto_clocked_out',
+                callsTotal,        // Added to payload
+                callsIgnored       // Added to payload
+            };
+        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        setRecentShiftAudits(audits);
+    };
+
+    // Auto-run when you click the tab
+    useEffect(() => {
+        if (activeTab === 'reports') generateSmartReports();
+    }, [activeTab, financeMonth]);
     // --- FINANCE: GENERATE PAYOUTS LIST ---
     const generateGuardPayouts = async () => {
         const [year, month] = financeMonth.split('-');
@@ -689,9 +819,11 @@ export default function AdminDashboard() {
 
             {/* LEFT SIDEBAR: List of Sites */}
             <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-b md:border-b-0 md:border-r border-gray-200 shrink-0 md:h-screen flex flex-col">
+                {/* NEW: TAB TOGGLES */}
                 <div className="flex p-2 gap-2 bg-gray-900 border-b border-gray-700">
-                    <button onClick={() => setActiveTab('sites')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'sites' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Site Control</button>
-                    <button onClick={() => setActiveTab('finance')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'finance' ? 'bg-ees-red text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Billing</button>
+                    <button onClick={() => setActiveTab('sites')} className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition ${activeTab === 'sites' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Sites</button>
+                    <button onClick={() => setActiveTab('finance')} className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition ${activeTab === 'finance' ? 'bg-ees-red text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Billing</button>
+                    <button onClick={() => setActiveTab('reports')} className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition ${activeTab === 'reports' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Reports</button>
                 </div>
                 <div className="p-4 sm:p-6 border-b border-gray-200 bg-white z-10 flex justify-between items-center">
                     <h2 className="text-lg sm:text-xl font-extrabold text-ees-navy">Active Sites</h2>
@@ -1036,6 +1168,146 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )}
+                {/* --- NEW: SMART REPORTS & ANALYTICS VIEW --- */}
+                {activeTab === 'reports' && (
+                    <div className="max-w-6xl mx-auto animate-fade-in-up">
+                        <div className="bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-700 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <BarChart className="h-10 w-10 text-blue-500" />
+                                <div>
+                                    <h1 className="text-3xl font-extrabold text-white">Smart Analytics</h1>
+                                    <p className="text-gray-400 mt-1">AI-driven risk assessment of guard performance & discipline.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <input type="month" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} className="bg-gray-900 border border-gray-600 text-white rounded-lg p-2.5 outline-none focus:border-blue-500 font-bold" />
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-800 rounded-2xl shadow-sm border border-gray-700 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                    <thead className="bg-gray-900 border-b border-gray-700 text-gray-400">
+                                        <tr>
+                                            <th className="p-4 font-bold">Guard Name</th>
+                                            <th className="p-4 font-bold text-center">Total Shifts</th>
+                                            <th className="p-4 font-bold text-center">Late Arrivals</th>
+                                            <th className="p-4 font-bold text-center">Missed Checkouts</th>
+                                            <th className="p-4 font-bold text-center">Avg Patrols/Shift</th>
+                                            <th className="p-4 font-bold text-center">Risk Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-gray-300">
+                                        {guardReports.length === 0 && (
+                                            <tr><td colSpan={6} className="p-8 text-center text-gray-500">No data found for this month.</td></tr>
+                                        )}
+                                        {guardReports.map((report, idx) => (
+                                            <tr key={idx} className="border-b border-gray-700 hover:bg-gray-700/50 transition">
+                                                <td className="p-4 font-bold text-white">{report.name}</td>
+                                                <td className="p-4 text-center font-semibold">{report.totalShifts}</td>
+                                                <td className="p-4 text-center">
+                                                    <span className={`font-bold ${report.lateClockIns > 0 ? 'text-red-400' : 'text-green-400'}`}>{report.lateClockIns}</span>
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <span className={`font-bold ${report.autoClockOuts > 0 ? 'text-orange-400' : 'text-green-400'}`}>{report.autoClockOuts}</span>
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <span className={`font-bold ${report.avgScans < 3 ? 'text-red-400' : 'text-blue-400'}`}>{report.avgScans} scans</span>
+                                                </td>
+                                                <td className="p-4 text-center flex justify-center">
+                                                    {report.riskLevel === 'Red' && <span className="bg-red-900/50 text-red-400 border border-red-800 px-3 py-1 rounded-full font-bold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> HIGH RISK</span>}
+                                                    {report.riskLevel === 'Yellow' && <span className="bg-orange-900/50 text-orange-400 border border-orange-800 px-3 py-1 rounded-full font-bold">WARNING</span>}
+                                                    {report.riskLevel === 'Green' && <span className="bg-green-900/50 text-green-400 border border-green-800 px-3 py-1 rounded-full font-bold">RELIABLE</span>}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div className="bg-gray-800 rounded-2xl shadow-sm border border-gray-700 overflow-hidden mt-8">
+                            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <Clock className="h-5 w-5 text-ees-red" /> Comprehensive Shift Audit
+                                    </h2>
+                                    <p className="text-xs text-gray-400 mt-1">Reviewing ALL completed shifts (Day & Night) from the last 48 hours for missed patrols.</p>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                    <thead className="bg-gray-900 border-b border-gray-700 text-gray-400">
+                                        <tr>
+                                            <th className="p-4 font-bold">Date</th>
+                                            <th className="p-4 font-bold">Guard</th>
+                                            <th className="p-4 font-bold">Site</th>
+                                            <th className="p-4 font-bold text-center">Duration</th>
+                                            <th className="p-4 font-bold text-center">Scans</th>
+                                            {/* NEW HEADER */}
+                                            <th className="p-4 font-bold text-center">AI Robot Alerts</th>
+                                            <th className="p-4 font-bold">Audit Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-gray-300">
+                                        {recentShiftAudits.length === 0 && (
+                                            <tr><td colSpan={7} className="p-8 text-center text-gray-500">No recent completed shifts to audit.</td></tr>
+                                        )}
+                                        {recentShiftAudits.map((audit, idx) => (
+                                            <tr key={idx} className="border-b border-gray-700 hover:bg-gray-700/50 transition">
+                                                <td className="p-4 font-bold text-gray-400">{audit.date}</td>
+                                                <td className="p-4 font-bold text-white">{audit.guardName}</td>
+                                                <td className="p-4 text-gray-400">{audit.siteName}</td>
+                                                <td className="p-4 text-center">{audit.shiftDuration} hrs</td>
+                                                <td className="p-4 text-center">
+                                                    <span className={`font-bold px-2 py-1 rounded ${audit.totalScans < audit.expectedRounds ? 'bg-red-900/30 text-red-400' : 'bg-gray-900 text-blue-400'}`}>
+                                                        {audit.totalScans} / {audit.expectedRounds}
+                                                    </span>
+                                                </td>
+
+                                                {/* NEW CALL LOGS COLUMN */}
+                                                <td className="p-4 text-center">
+                                                    {audit.callsTotal === 0 ? (
+                                                        <span className="text-gray-600 text-xs font-semibold">No Alerts</span>
+                                                    ) : audit.callsIgnored > 0 ? (
+                                                        <span className="bg-red-900/30 text-red-400 border border-red-800 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1 w-fit mx-auto" title="Guard blocked or cut the calls">
+                                                            <Phone className="h-3 w-3" /> {audit.callsTotal} Calls ({audit.callsIgnored} Blocked/Cut)
+                                                        </span>
+                                                    ) : (
+                                                        <span className="bg-orange-900/30 text-orange-400 border border-orange-800 px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1 w-fit mx-auto" title="Calls were answered">
+                                                            <Phone className="h-3 w-3" /> {audit.callsTotal} Calls (Answered)
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                <td className="p-4">
+                                                    {audit.status === 'Slept / 0 Scans' && (
+                                                        <span className="bg-red-900/80 text-red-300 border border-red-700 px-3 py-1 rounded font-bold flex items-center gap-2 w-fit">
+                                                            <ShieldAlert className="h-4 w-4" /> SLEPT ON DUTY
+                                                        </span>
+                                                    )}
+                                                    {audit.status === 'Missed Patrols' && (
+                                                        <span className="bg-orange-900/50 text-orange-400 border border-orange-800 px-3 py-1 rounded font-bold w-fit block">
+                                                            MISSED PATROLS
+                                                        </span>
+                                                    )}
+                                                    {audit.status === 'Clear' && (
+                                                        <span className="text-green-500 font-bold flex items-center gap-1">
+                                                            <CheckCircle className="h-4 w-4" /> CLEAR
+                                                        </span>
+                                                    )}
+                                                    {audit.wasAutoClockedOut && (
+                                                        <span className="block mt-1 text-[10px] text-red-500 uppercase tracking-widest font-bold">Auto-Clocked Out</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
                 )}
             </div>
