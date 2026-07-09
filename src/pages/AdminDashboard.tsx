@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Building2, Users, QrCode, Plus, Printer, MapPin, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, CheckCircle, Download, LogOut } from 'lucide-react';
+import { Building2, Users, QrCode, Plus, Printer, MapPin, Settings, X, CheckSquare, Square, UserPlus, Phone, Clock, Link as LinkIcon, ShieldAlert, Activity, Download, LogOut, Calculator, FileText, Receipt, CheckCircle } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +13,15 @@ export default function AdminDashboard() {
     const [selectedSite, setSelectedSite] = useState<any | null>(null);
     const [patrolLogs, setPatrolLogs] = useState<any[]>([]);
     const [showAllLivePatrols, setShowAllLivePatrols] = useState(false);
+    // --- FINANCE & BILLING STATE ---
+    const [activeTab, setActiveTab] = useState<'sites' | 'finance'>('sites');
+    const [financeMonth, setFinanceMonth] = useState(() => {
+        const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const [financeSiteId, setFinanceSiteId] = useState('');
+    const [guardPayRate, setGuardPayRate] = useState(350);
+    const [clientBillRate, setClientBillRate] = useState(450);
+    const [serviceChargePct, setServiceChargePct] = useState(5);
 
     const [siteGuards, setSiteGuards] = useState<any[]>([]);
     const [checkpoints, setCheckpoints] = useState<any[]>([]);
@@ -353,6 +362,123 @@ export default function AdminDashboard() {
             link.click();
         };
     };
+    // --- FINANCE: GENERATE PAYOUTS LIST ---
+    const generateGuardPayouts = async () => {
+        const [year, month] = financeMonth.split('-');
+        const startDate = new Date(Number(year), Number(month) - 1, 1).toISOString();
+        const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59).toISOString();
+
+        const { data: logs } = await supabase.from('attendance_logs')
+            .select('guard_id, guards(name)')
+            .gte('clock_in_time', startDate)
+            .lte('clock_in_time', endDate)
+            .in('status', ['clocked_out', 'auto_clocked_out']);
+
+        if (!logs || logs.length === 0) return alert("No completed shifts found for this month.");
+
+        // Calculate shifts per guard
+        const payouts: Record<string, { name: string, shifts: number }> = {};
+        logs.forEach((log: any) => {
+            if (!payouts[log.guard_id]) payouts[log.guard_id] = { name: log.guards?.name || 'Unknown', shifts: 0 };
+            payouts[log.guard_id].shifts += 1;
+        });
+
+        let rowsHTML = '';
+        let totalCompanyPayout = 0;
+        Object.values(payouts).forEach(g => {
+            const pay = g.shifts * guardPayRate;
+            totalCompanyPayout += pay;
+            rowsHTML += `<tr><td style="padding:8px; border:1px solid #ddd;">${g.name}</td><td style="padding:8px; border:1px solid #ddd; text-align:center;">${g.shifts}</td><td style="padding:8px; border:1px solid #ddd; text-align:right;">₹${pay.toFixed(2)}</td></tr>`;
+        });
+
+        const win = window.open('', '_blank');
+        win?.document.write(`<html><head><title>Guard Payouts - ${financeMonth}</title></head><body style="font-family:sans-serif; padding:40px;"><h2>EAGLE EYE SECURITY - GUARD PAYOUTS</h2><p><strong>Month:</strong> ${financeMonth} | <strong>Rate:</strong> ₹${guardPayRate}/shift</p><table style="width:100%; border-collapse:collapse; margin-top:20px;"><thead><tr style="background:#f3f4f6;"><th style="padding:8px; border:1px solid #ddd; text-align:left;">Guard Name</th><th style="padding:8px; border:1px solid #ddd;">Total Shifts</th><th style="padding:8px; border:1px solid #ddd; text-align:right;">Total Pay</th></tr></thead><tbody>${rowsHTML}</tbody><tfoot><tr><td colspan="2" style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;">Total Company Payout:</td><td style="padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;">₹${totalCompanyPayout.toFixed(2)}</td></tr></tfoot></table><script>setTimeout(() => { window.print(); window.close(); }, 500);</script></body></html>`);
+        win?.document.close();
+    };
+
+    // --- FINANCE: GENERATE INVOICE (Registered OR Unregistered) ---
+    const generateInvoice = async (isRegistered: boolean) => {
+        if (!financeSiteId) return alert("Please select a site for the invoice.");
+        const site = sites.find(s => s.id === financeSiteId);
+
+        const [year, month] = financeMonth.split('-');
+        const startDate = new Date(Number(year), Number(month) - 1, 1).toISOString();
+        const endDate = new Date(Number(year), Number(month), 0, 23, 59, 59).toISOString();
+
+        const { data: logs } = await supabase.from('attendance_logs')
+            .select('id')
+            .eq('site_id', financeSiteId)
+            .gte('clock_in_time', startDate)
+            .lte('clock_in_time', endDate)
+            .in('status', ['clocked_out', 'auto_clocked_out']);
+
+        const totalShifts = logs?.length || 0;
+        if (totalShifts === 0) return alert("No completed shifts found for this site in this month.");
+
+        const basicTotal = totalShifts * clientBillRate;
+
+        let epf = 0, esi = 0, subTotal = basicTotal, serviceCharge = 0, taxableValue = 0, gst = 0, grandTotal = 0;
+
+        if (isRegistered) {
+            epf = basicTotal * 0.13;
+            esi = basicTotal * 0.0325;
+            subTotal = basicTotal + epf + esi;
+            serviceCharge = subTotal * (serviceChargePct / 100);
+            taxableValue = subTotal + serviceCharge;
+            gst = taxableValue * 0.18;
+            grandTotal = taxableValue + gst;
+        } else {
+            serviceCharge = basicTotal * (serviceChargePct / 100);
+            grandTotal = basicTotal + serviceCharge;
+        }
+
+        const win = window.open('', '_blank');
+        win?.document.write(`<html><head><title>Invoice - ${site.name}</title></head><body style="font-family:sans-serif; padding:40px; color:#333;">
+            <div style="text-align:center; border-bottom:2px solid #1e293b; padding-bottom:20px; margin-bottom:20px;">
+                <h1 style="color:#1e293b; margin:0;">EAGLE EYE SECURITY SERVICES</h1>
+                <p style="margin:5px 0;">Mandi Samiti Road, Majhola, Moradabad, UP</p>
+                ${isRegistered ? '<p style="margin:0; font-weight:bold;">GSTIN: [YOUR_GST_NUMBER] | PAN: [YOUR_PAN]</p>' : ''}
+            </div>
+            <h3>TAX INVOICE ${!isRegistered ? '(PROFORMA)' : ''}</h3>
+            <p><strong>Bill To:</strong> ${site.name}<br/>${site.address}<br/><strong>Billing Month:</strong> ${financeMonth}</p>
+            
+            <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                <tr style="background:#f3f4f6; text-align:left;">
+                    <th style="padding:10px; border:1px solid #ccc;">Description</th>
+                    <th style="padding:10px; border:1px solid #ccc; text-align:center;">Total Shifts</th>
+                    <th style="padding:10px; border:1px solid #ccc; text-align:right;">Rate/Shift</th>
+                    <th style="padding:10px; border:1px solid #ccc; text-align:right;">Amount</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px; border:1px solid #ccc;">Security Guard Duties</td>
+                    <td style="padding:10px; border:1px solid #ccc; text-align:center;">${totalShifts}</td>
+                    <td style="padding:10px; border:1px solid #ccc; text-align:right;">₹${clientBillRate.toFixed(2)}</td>
+                    <td style="padding:10px; border:1px solid #ccc; text-align:right;">₹${basicTotal.toFixed(2)}</td>
+                </tr>
+            </table>
+
+            <div style="width:300px; margin-left:auto; margin-top:20px;">
+                ${isRegistered ? `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>EPF (13%):</span><span>₹${epf.toFixed(2)}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>ESI (3.25%):</span><span>₹${esi.toFixed(2)}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:bold; border-bottom:1px solid #ccc; padding-bottom:5px;"><span>Sub-Total:</span><span>₹${subTotal.toFixed(2)}</span></div>
+                ` : ''}
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; padding-top:5px;"><span>Service Charge (${serviceChargePct}%):</span><span>₹${serviceCharge.toFixed(2)}</span></div>
+                ${isRegistered ? `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:bold; border-bottom:1px solid #ccc; padding-bottom:5px;"><span>Taxable Value:</span><span>₹${taxableValue.toFixed(2)}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; padding-top:5px;"><span>CGST (9%):</span><span>₹${(gst / 2).toFixed(2)}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>SGST (9%):</span><span>₹${(gst / 2).toFixed(2)}</span></div>
+                ` : ''}
+                <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:18px; font-weight:bold; background:#f3f4f6; padding:10px;"><span>GRAND TOTAL:</span><span>₹${grandTotal.toFixed(2)}</span></div>
+            </div>
+            <div style="margin-top:50px;">
+                <p><strong>Bank Details:</strong><br/>Account Name: Eagle Eye Security Services<br/>Bank: [YOUR_BANK]<br/>A/C No: [YOUR_AC]<br/>IFSC: [YOUR_IFSC]</p>
+                <div style="text-align:right; margin-top:40px;"><p>Authorized Signatory</p></div>
+            </div>
+            <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
+        </body></html>`);
+        win?.document.close();
+    };
 
     if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center font-bold text-xl text-ees-navy">Loading HQ...</div>;
     const toggleCpAssignment = async (guardId: string) => {
@@ -563,6 +689,10 @@ export default function AdminDashboard() {
 
             {/* LEFT SIDEBAR: List of Sites */}
             <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-b md:border-b-0 md:border-r border-gray-200 shrink-0 md:h-screen flex flex-col">
+                <div className="flex p-2 gap-2 bg-gray-900 border-b border-gray-700">
+                    <button onClick={() => setActiveTab('sites')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'sites' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Site Control</button>
+                    <button onClick={() => setActiveTab('finance')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${activeTab === 'finance' ? 'bg-ees-red text-white' : 'text-gray-400 hover:bg-gray-800'}`}>Billing</button>
+                </div>
                 <div className="p-4 sm:p-6 border-b border-gray-200 bg-white z-10 flex justify-between items-center">
                     <h2 className="text-lg sm:text-xl font-extrabold text-ees-navy">Active Sites</h2>
                     <button onClick={() => setShowAddSiteModal(true)} className="bg-ees-red text-white p-2 rounded-md hover:bg-red-700 transition shadow-md" title="Add New Site">
@@ -599,7 +729,7 @@ export default function AdminDashboard() {
 
             {/* RIGHT MAIN PANEL */}
             <div className="flex-1 bg-gray-50 h-auto md:h-screen overflow-y-auto p-4 md:p-8">
-                {!selectedSite ? (
+                {activeTab === 'sites' && (!selectedSite ? (
                     <div className="h-[50vh] md:h-full flex flex-col items-center justify-center text-gray-400">
                         <Building2 className="h-16 w-16 sm:h-24 sm:w-24 mb-4 opacity-20" />
                         <h2 className="text-xl sm:text-2xl font-bold text-center">Select a site to view details</h2>
@@ -844,6 +974,68 @@ export default function AdminDashboard() {
                             })()}
                         </div>
 
+                    </div>
+                ))}
+                {activeTab === 'finance' && (
+                    <div className="max-w-4xl mx-auto animate-fade-in-up">
+                        <div className="bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-700 mb-8 flex items-center gap-4">
+                            <Calculator className="h-10 w-10 text-ees-red" />
+                            <div>
+                                <h1 className="text-3xl font-extrabold text-white">Financial Engine</h1>
+                                <p className="text-gray-400 mt-1">Automated payroll and invoice generation based on live attendance data.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 mb-8 space-y-6">
+                            <h2 className="text-xl font-bold text-white border-b border-gray-700 pb-3">Billing Parameters</h2>
+                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Billing Month</label>
+                                    <input type="month" value={financeMonth} onChange={(e) => setFinanceMonth(e.target.value)} className="w-full bg-gray-900 border border-gray-600 text-white rounded-lg p-2.5 outline-none focus:border-ees-red" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Guard Pay (₹/Shift)</label>
+                                    <input type="number" value={guardPayRate} onChange={(e) => setGuardPayRate(Number(e.target.value))} className="w-full bg-gray-900 border border-gray-600 text-white rounded-lg p-2.5 outline-none focus:border-ees-red" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Client Bill (₹/Shift)</label>
+                                    <input type="number" value={clientBillRate} onChange={(e) => setClientBillRate(Number(e.target.value))} className="w-full bg-gray-900 border border-gray-600 text-white rounded-lg p-2.5 outline-none focus:border-ees-red" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Service Chg (%)</label>
+                                    <input type="number" value={serviceChargePct} onChange={(e) => setServiceChargePct(Number(e.target.value))} className="w-full bg-gray-900 border border-gray-600 text-white rounded-lg p-2.5 outline-none focus:border-ees-red" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                            {/* Guard Payouts Card */}
+                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700">
+                                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Users className="h-5 w-5 text-ees-red" /> Generate Payouts</h3>
+                                <p className="text-sm text-gray-400 mb-6">Calculates total shifts worked by every guard this month and generates a salary sheet.</p>
+                                <button onClick={generateGuardPayouts} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition">
+                                    <FileText className="h-5 w-5" /> Download Payout Sheet
+                                </button>
+                            </div>
+
+                            {/* Client Invoices Card */}
+                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700">
+                                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Building2 className="h-5 w-5 text-ees-red" /> Generate Invoice</h3>
+                                <p className="text-sm text-gray-400 mb-4">Select a site to generate its monthly bill.</p>
+                                <select value={financeSiteId} onChange={(e) => setFinanceSiteId(e.target.value)} className="w-full bg-gray-900 border border-gray-600 text-white rounded-lg p-3 outline-none focus:border-ees-red mb-4">
+                                    <option value="">-- Select Site --</option>
+                                    {sites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <div className="flex gap-2">
+                                    <button onClick={() => generateInvoice(true)} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition" title="Includes EPF, ESI, and GST">
+                                        <Receipt className="h-5 w-5" /> Registered
+                                    </button>
+                                    <button onClick={() => generateInvoice(false)} className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition" title="Basic Rate + Service Charge only">
+                                        <FileText className="h-5 w-5" /> Non-Reg
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
