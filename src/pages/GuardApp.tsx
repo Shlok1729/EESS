@@ -6,6 +6,9 @@ import { Shield, Camera, QrCode, LogOut, Building2, Loader2, Lock, UserCheck } f
 export default function GuardApp() {
     const [guards, setGuards] = useState<any[]>([]);
     const [sites, setSites] = useState<any[]>([]);
+    // --- NEW: GUARD STATS STATE ---
+    const [shiftsCount, setShiftsCount] = useState<number>(0);
+    const [lastPatrolText, setLastPatrolText] = useState<string>('Loading...');
 
     const [selectedGuard, setSelectedGuard] = useState<any | null>(null);
     const [selectedSite, setSelectedSite] = useState<any | null>(null);
@@ -26,6 +29,7 @@ export default function GuardApp() {
     useEffect(() => {
         if (selectedGuard && selectedSite) {
             checkAttendanceStatus();
+            fetchGuardStats();
         }
     }, [selectedGuard, selectedSite]);
 
@@ -75,6 +79,42 @@ export default function GuardApp() {
         setConfirmingGuard(null);
         localStorage.removeItem('active_guard');
         localStorage.removeItem('active_site');
+    };
+    // --- NEW: FETCH GUARD SHIFTS & LAST PATROL ---
+    const fetchGuardStats = async () => {
+        // 1. Fetch Completed Shifts Count
+        const { count } = await supabase
+            .from('attendance_logs')
+            .select('*', { count: 'exact', head: true })
+            .eq('guard_id', selectedGuard.id)
+            .eq('site_id', selectedSite.id)
+            .in('status', ['clocked_out', 'auto_clocked_out']);
+
+        setShiftsCount(count || 0);
+
+        // 2. Fetch Last Patrol Scan Time
+        const { data: cpData } = await supabase.from('checkpoints').select('id').eq('site_id', selectedSite.id);
+        const cpIds = cpData?.map(c => c.id) || [];
+
+        if (cpIds.length > 0) {
+            const { data: pLogs } = await supabase
+                .from('patrol_logs')
+                .select('scanned_at')
+                .eq('guard_id', selectedGuard.id)
+                .in('checkpoint_id', cpIds)
+                .order('scanned_at', { ascending: false })
+                .limit(1);
+
+            if (pLogs && pLogs.length > 0) {
+                const lastScan = new Date(pLogs[0].scanned_at);
+                const diffMins = Math.floor((new Date().getTime() - lastScan.getTime()) / 60000);
+                setLastPatrolText(`${diffMins} mins ago`);
+            } else {
+                setLastPatrolText('No patrols yet');
+            }
+        } else {
+            setLastPatrolText('No checkpoints');
+        }
     };
 
     const checkAttendanceStatus = async () => {
@@ -179,6 +219,19 @@ export default function GuardApp() {
                                                     <LogOut className="h-6 w-6" />
                                                 </button>
                                             )}
+                                        </div>
+                                        {/* --- NEW: GUARD STATS PANEL --- */}
+                                        <div className="grid grid-cols-2 gap-3 mb-4 animate-fade-in-up">
+                                            <div className="bg-gray-700/50 rounded-xl p-3 text-center border border-gray-600">
+                                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Shifts</p>
+                                                <p className="text-white font-black text-2xl">{shiftsCount}</p>
+                                            </div>
+                                            <div className="bg-gray-700/50 rounded-xl p-3 text-center border border-gray-600">
+                                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Last Patrol</p>
+                                                <p className={`font-black ${lastPatrolText.includes('mins ago') ? 'text-ees-red text-xl' : 'text-gray-400 text-sm mt-1.5'}`}>
+                                                    {lastPatrolText}
+                                                </p>
+                                            </div>
                                         </div>
 
                                         {/* ATTENDANCE BUTTON (Always Visible) */}
